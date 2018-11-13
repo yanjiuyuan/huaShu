@@ -1,0 +1,295 @@
+﻿@{
+    Layout = null;
+}
+
+<!--右侧实体内容-->
+<el-main id="partPage" style="margin-top:20px;">
+    <br />
+    <template v-if="userName == '蔡兴桐' || userName == '黄浩炜' || userName == '詹姆斯'">
+        <span>我是：</span>
+        <el-select v-model="userName" v-on:change="selectUser" filterable placeholder="请选择">
+            <el-option v-for="item in userList"
+                       :key="item.PeopleId"
+                       :label="item.NodePeople"
+                       :value="item.PeopleId">
+            </el-option>
+        </el-select>
+        <p>{{name}}</p>
+        <p>{{id}}</p>
+        <el-button class="button-new-tag" size="small" v-on:click="addMemberTest()">+ 选人</el-button>
+    </template>
+    <el-collapse v-model="activeNames">
+        <el-collapse-item v-for="(m,i) in menu" :name="i+1" :key="i">
+            <template slot="title">
+                <span style="font-size:20px;">{{m.SORT_NAME}}</span>
+            </template>
+            <div v-for="l in list" v-if="l.sortId == m.SORT_ID && l.url" class="approval-box" v-on:click="toApprove(l.url,l.flowId)" style="cursor:pointer;">
+                <div class="approval-box-img" :style="{backgroundPosition:l.position}"></div>
+                <p>{{l.flowName}}</p>
+            </div>
+        </el-collapse-item>
+    </el-collapse>
+</el-main>
+
+<script>
+    imgConfig = [
+        {
+            flowId: 24,
+            sortId: 1,
+            url: '/approval/PurchaseNew',  //零部件采购
+            position: '-414px -137px'
+        },
+        {
+            flowId: 12,
+            sortId: 1,
+            url: '/approval/FinishedPurchase',  //成品采购
+            position: '-414px -137px'
+        },
+        {
+            flowId: 1,
+            sortId: 4,
+            url: '/approval/officesupplies',
+            position: '-413px -47px'
+        },
+        {
+            flowId: 4,
+            sortId: 2,
+            url: '',
+            //url: '/approval/UseCar',
+            position: '-234px -317px'
+        },
+        {
+            flowId: 5,
+            sortId: 3,
+            url: '',
+            //url: '/approval/UseCar',
+            position: '-594px -227px'
+        },
+        {
+            flowId: 6,
+            sortId: 3,
+            url: '/approval/UploadPaper',
+            position: '-684px -227px'
+        },
+        {
+            flowId: 23,
+            sortId: 3,
+            url: '/approval/UploadPaperRe',
+            position: '-144px -47px'
+        },
+        {
+            flowId: 7,
+            sortId: 3,
+            url: '/approval/DownloadPaper',
+            position: '-324px -227px'
+        },
+       
+        {
+            flowId: 8,
+            sortId: 1,
+            url: '/approval/AddMaterielCode', //物料编码新增
+            position: '-54px -227px'
+        },
+        {
+            flowId: 18,
+            sortId: 4,
+            url: '/approval/officePurchase',
+            position: '-413px -47px'
+        },
+        {
+            flowId: 9,
+            sortId: 2,
+            url: '/approval/FileManager',
+            position: '-774px -227px'
+        },
+        {
+            flowId: 10,
+            sortId: 2,
+            url: '/approval/ProjectManager',
+            position: '-232px -317px'
+        },
+        {
+            flowId: 11,
+            sortId: 2,
+            url: '/approval/AddProject',
+            position: '-594px -227px'
+        },
+        {
+            flowId: 13,
+            sortId: 6,
+            url: '/approval/UsePublicCar',
+            position: '-775px -317px'
+        },
+        {
+            flowId: 14,
+            sortId: 6,
+            url: '/approval/UseCar',
+            position: '-504px -407px'
+        },
+        {
+            flowId: 15,
+            sortId: 6,
+            url: '/approval/CarManager',
+            position: '-144px -227px'
+        },
+        {
+            flowId: 16,
+            sortId: 7,
+            url: '/approval/Vote',
+            position: '-594px -47px'
+        },
+        {
+            flowId: 17,
+            sortId: 7,
+            url: '/approval/WorkOvertime',
+            position: '-323px -47px'
+        },
+        {
+            flowId: 19,
+            sortId: 7,
+            url: '/approval/SendRead',
+            position: '-778px -138px'
+        },
+        {
+            flowId: 20,
+            sortId: 8,
+            url: '/approval/PublishNew',//新闻发布
+            position: '-54px -138px'
+        },
+        {
+            flowId: 21,
+            sortId: 8,
+            url: '/approval/PublishRecruit',//招聘信息发布
+            position: '-778px -138px'
+        },
+        {
+            flowId: 22,
+            sortId: 8,
+            url: '/approval/PublishProduct',//案例发布
+            position: '-54px -318px'
+        }
+    ]
+    var demo = new Vue({
+        el: "#partPage",
+        mixins: [mixin],
+        data: function () {
+            return {
+                activeNames: [1,2,3,4,5],
+                count: 2,
+                name: '',
+                id: '',
+                menu: [],
+                list: [],
+                userList: userList,
+                userName: DingData.nickName
+            }
+        },
+        methods: {
+            getMenu: function () {
+                 
+                var that = this
+                $.ajax({
+                    url: '/FlowInfo/LoadFlowSort?id=123',
+                    dataType: 'json',
+                    type: 'GET',
+                    cache: false,
+                    success: function (data) {
+                        that.menu = data
+                        console.log('/FlowInfo/LoadFlowSort?id=123')
+                        console.log(that.menu)
+                        $.ajax({
+                            url: '/FlowInfo/LoadFlowInfo?id=123',
+                            dataType: 'json',
+                            type: 'GET',
+                            cache: false,
+                            success: function (data) {
+                                that.list = _mergeObjectArr(data, imgConfig, 'flowId')
+                                console.log('/FlowInfo/LoadFlowInfo?id=123')
+                                console.log(that.list)
+                                that.filterMenuList()
+                            }
+                        })
+                    }
+                })
+            },
+            filterMenuList() {
+                var that = this
+                var url = '/Role/GetRoleInfo?RoleName=研究院官网维护人员' 
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                        console.log('获取研究院官网维护人员详细信息')
+                        console.log(data)
+                        let isRole = false
+                        for (let d of data) {
+                            console.log(d)
+                            if (d.name == DingData.nickName) {
+                                isRole = true
+                                break
+                            }
+                        }
+                        if (!isRole) {
+                            console.log('开始过滤-研究院官网维护人员')
+                            console.log(isRole)
+                            for (var i = 0; i < that.menu.length; i++) {
+                                if (that.menu[i].SORT_NAME == '研究院官网管理') {
+                                    that.menu.splice(i, 1)
+                                }
+                            }
+                        }
+                    }
+                })
+            },
+            addMemberTest() {
+                var that = this
+
+                DingTalkPC.biz.contact.choose({
+                    users: [], //默认选中的用户列表，员工userid；成功回调中应包含该信息
+                    corpId: DingData.CorpId, //企业id
+                    max: 10, //人数限制，当multiple为true才生效，可选范围1-1500
+                    onSuccess: function (data) {
+                        console.log(data)
+                        that.name = data[0].name
+                        that.id = data[0].emplId
+                        DingData.userid = data[0].emplId
+                        DingData.nickName = data[0].name
+                    },
+                    onFail: function (err) { }
+                });
+            },
+            toApprove: function (url, id) {
+                FlowId = id
+                loadPage(url)
+            },
+            loadPage: function (url) {
+                $("#tempPage").load(url)
+            },
+            selectUser: function (id) {
+                console.log(id)
+                for (var user of this.userList) {
+                    if (user.PeopleId == id) {
+                        DingData.userid = user.PeopleId
+                        DingData.nickName = user.NodePeople
+                    }
+                }
+            },
+            getUserInfo: function () {
+                var that = this
+                let url = '/FlowInfo/GetUserInfo'
+                let handle = function (data) {
+                    that.userList = data
+                }
+                this._getData(url, handle)
+            }
+        },
+        created: function () {
+
+            var node = document.getElementById('content');
+            
+            this.getMenu()
+            this.getUserInfo()
+            loadHtml("mainPage", "partPage")
+        }
+    })
+
+</script>

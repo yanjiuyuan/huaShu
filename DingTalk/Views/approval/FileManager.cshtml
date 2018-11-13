@@ -1,0 +1,371 @@
+﻿@{
+    Layout = null;
+}
+
+<!--右侧实体内容-->
+<el-main id="partPage" style="position:relative;">
+    <!--标题-->
+    <div class="head-fixed" onclick="loadPage('/Main/approval')">
+        <i class="el-icon-arrow-left"></i>
+        项目文件管理
+    </div>
+
+    @*<div style="width:80%;float:left;">*@
+    <div>
+        <!--项目信息表格-->
+        <el-breadcrumb separator="/">
+            <el-breadcrumb-item v-for="(p,i) in pathList" :key="i" v-show="i < pathList.length - 1 && i != 0">
+                <span v-on:click="clickPath(i)">{{p}}</span>
+            </el-breadcrumb-item>
+            <el-breadcrumb-item>{{pathList[pathList.length - 1]}}</el-breadcrumb-item>
+        </el-breadcrumb>
+        <br />
+        <div>
+            <span style="font-size:1.2rem;">文件夹列表</span>
+            <el-button v-on:click="dialogFormVisible = true" v-if="pathList.length > 5" size="small" type="primary">新建文件夹</el-button>
+        </div>
+        <div v-for="f in folderList" class="folder-box" v-on:mouseover="getProject(f)" style="cursor:pointer;">
+            @*<div class="approval-box-img" style="backgroundPosition:-414px -47px;"></div>*@
+            <img v-on:click="openFolder(f)" src="~/Content/images/folder.png" />
+            @*<i class="el-icon-error" style="color:red;"></i>*@
+            <p>{{f | substring}}</p>
+        </div>
+        <!--项目详情-->
+        <div v-if="pathList.length == 4" style="clear:left;">
+            <span style="font-size:1.2rem;">项目详情</span>
+            <el-table :data="projectInfo" stripe border>
+                <el-table-column type="expand">
+                    <template slot-scope="props">
+                        <el-form label-position="left" inline class="table-expand">
+                            <span>创建时间:{{ props.row.CreateTime }}</span>&nbsp;&nbsp;
+                            <span>开始时间:{{ props.row.StartTime }}</span>&nbsp;&nbsp;
+                            <span>结束时间:{{ props.row.EndTime }}</span><br />
+                            <span>小组成员:{{ props.row.TeamMembers }}</span>&nbsp;
+                            <br />&nbsp;
+                        </el-form>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="ProjectId" label="项目编号"></el-table-column>
+                <el-table-column prop="ProjectName" label="项目名称"></el-table-column>
+                <el-table-column prop="DeptName" label="部门名称"></el-table-column>
+                <el-table-column prop="ApplyMan" label="创建人"></el-table-column>
+                <el-table-column prop="ResponsibleMan" label="项目负责人"></el-table-column>
+                <el-table-column prop="ProjectState" label="状态"></el-table-column>
+            </el-table>
+        </div>
+        <!--底部文件扩展功能-->
+        <template v-if="pathList.length > 4">
+            <!--文件列表-->
+            <div style="clear:left;">
+                <span style="font-size:1.2rem;">文件列表</span>
+            </div>
+            <el-table :data="tableData" stripe border>
+                <el-table-column prop="name" label="文件名"></el-table-column>
+                <el-table-column label="操作" width="150">
+                    <template slot-scope="scope">
+                        <el-button size="mini" v-on:click="downloadFile(scope.$index, scope.row)">下载</el-button>
+                        <el-button size="mini" type="danger" v-on:click="deleteFile(scope.$index, scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <!--底部翻頁-->
+            <div style="text-align:right">
+                <el-pagination v-on:size-change="handleSizeChange"
+                               v-on:current-change="handleCurrentChange"
+                               :current-page="currentPage"
+                               :page-sizes="[1, 3, 5, 10]"
+                               :page-size="5"
+                               layout="total, sizes, prev, pager, next, jumper"
+                               :total="totalRows">
+                </el-pagination>
+            </div>
+            <!--上传文件-->
+            <el-upload class="upload-demo"
+                       drag
+                       :file-list="fileList"
+                       :action="uploadUrl"
+                       @*:on-remove="handleFileRemove"*@
+                       @*:before-upload="beforeFileUpload"*@
+                       :on-success="handleFileCardSuccess"
+                       multiple>
+                <i class="el-icon-upload"></i>
+                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                <div class="el-upload__tip" slot="tip">不超过30M</div>
+            </el-upload>
+        </template>
+    </div>
+
+    <!--新建文件夹表单-->
+    <el-dialog title="新建文件夹" :visible.sync="dialogFormVisible">
+        <el-form :model="formInline" class="demo-form-inline" :rules="rules" ref="formInline"
+                 size="medium" >
+            <el-form-item label="名称" prop="name">
+                <el-input v-model="formInline.name"></el-input>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button v-on:click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" v-on:click="createFolder">创 建</el-button>
+        </div>
+    </el-dialog>
+</el-main>
+
+<script>
+    var nowFile = ''
+    var vue = new Vue({
+        el: "#partPage",
+        mixins: [mixin],
+        data: function () {
+            return {
+                data: [],
+                tableData: [],
+                projectInfo: [],
+                folderList: [],
+                dialogFormVisible: false,
+                clockFolder: false,
+                isRoot: true,
+                pathList: ['UploadFile', '项目文件'],
+                fileList: [],
+                lineTree: [],
+                defaultProps: {
+                    children: 'children',
+                    label: 'label'
+                },
+                formInline: {
+                    name: ''
+                },
+                formProject: {
+                    inputProjectName: '',
+                    inputProjectId: '',
+                    Time: ''
+                },
+                ifExtend: false,
+                uploadUrl: ''
+            }
+        },
+        methods: {
+            //获取文件数据
+            getFileData: function () {
+                this.clockFolder = true
+                var that = this
+                var url = "/Project/GetFileMsg?path="
+                this.uploadUrl = "/drawingupload/Upload?path="
+                for (let p of this.pathList) {
+                    url = url + '\\' + p
+                    this.uploadUrl = this.uploadUrl + '\\' + p
+                }
+                url = url + '&userId=' + DingData.userid
+                this.uploadUrl = this.uploadUrl + '&ApplyManId=' + DingData.userid + '&ApplyMan=' + DingData.nickName
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                        data = JSON.parse(data)
+                        console.log('/获取文件数据')
+                        console.log(url)
+                        console.log(data)
+                        if (data.errorCode == 0) {
+                            that.$alert(data.errorMessage, '提示信息', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    return
+                                }
+                            });
+                        }
+                        if (data.errorCode == 0) {
+                            that.clockFolder = false
+                            that.pathList.pop()
+                            return
+                        }
+                        let folderArr = []
+                        let fileArr = []
+                        for (let d of data) {
+                            d.indexOf('.') > 0 ? fileArr.push({ name: d }) : folderArr.push(d)
+                        }
+                        that.folderList = folderArr
+                        that.data = fileArr
+                        that.totalRows = fileArr.length
+                        that.getData()
+                        that.clockFolder = false
+                    },
+                    error: function (err) {
+                        console.error(err)
+                    }
+                })
+            },
+            //获取项目数据getProject
+            getProject(filename) {
+                console.log('hover~~~')
+                if (this.pathList.length != 4)
+                    return
+                var that = this
+                var param = {
+                    key: this.pathList.join('\\') + '\\' + filename
+                }
+                url = "/Project/QuaryProjectInfo" + _formatQueryStr(param)
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log("获取项目列表数据 QuaryProjectInfo")
+                        console.log(url)
+                        console.log(data)
+                        that.projectInfo = data
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.log(XMLHttpRequest.status);
+                    }
+                })
+            },
+            //打开某文件夹相关操作
+            openFolder: function (folderName) {
+                //改变路径，加载新的文件夹、表单数据、切换相关变量
+                if (this.clockFolder) return
+                this.pathList.push(folderName)
+                this.getFileData()
+                console.log(this.pathList)
+            },
+            //点击路径跳转
+            clickPath: function (index) {
+                this.pathList.splice(index + 1)
+                this.getFileData()
+                console.log(this.pathList)
+                return
+                this.$alert('这是一段内容', '标题名称', {
+                    confirmButtonText: '确定',
+                    callback: action => {
+
+                    }
+                });
+            },
+            //下载文件
+            downloadFile: function (index, row) {
+                var that = this
+                var path = '\\'
+                for (let p of this.pathList) {
+                    path = path + p + '\\'
+                }
+                path += row.name
+                var paramObj = {
+                    "userId": DingData.userid,
+                    "path": path
+                }
+                console.log(paramObj)
+                $.ajax({
+                    url: '/Project/DownloadFileModel/',
+                    type: 'POST',
+                    dataType: "json",
+                    data: paramObj,
+                    success: function (data) {
+                        console.log('下载文件')
+                        console.log(data)
+                        
+                    }
+                })
+            },
+            //删除文件
+            deleteFile: function (index, row) {
+                var that = this
+                var url = "/Project/ChangeFile?&ApplyManId=" + DingData.userid + "&ApplyMan=" + DingData.nickName + "&ChangeType=1&Path="
+                for (let p of this.pathList) {
+                    url = url + '\\' + p
+                }
+                url = url + '\\' + row.name
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                        data = JSON.parse(data)
+                        console.log('/删除文件')
+                        console.log(url)
+                        console.log(data)
+                        that.getFileData()
+                    },
+                    error: function (err) {
+                        console.error(err)
+                    }
+                })
+            },
+            //上传文件
+            handleFileCardSuccess(response, file, fileList) {
+                console.log('上传文件返回结果')
+                console.log(this.uploadUrl)
+                console.log(file)
+                console.log(response)
+                this.$alert(response.errorMessage, '返回消息', {
+                    confirmButtonText: '确定'
+                });
+                this.getFileData()
+                var that = this
+                var paramObj = {
+                    "applyMan": DingData.nickName,
+                    "ApplyManId": DingData.userid,
+                    "FilePath": file.response.Content
+                }
+                console.log(paramObj)
+                $.ajax({
+                    url: '/DingTalkServers/uploadFile/',
+                    type: 'POST',
+                    dataType: "json",
+                    data: paramObj,
+                    success: function (data) {
+                        data = JSON.parse(data)
+                        console.log('上传文件到钉盘')
+                        console.log(data)
+                    }
+                })
+            },
+            handleChange: function () {
+
+            },
+            //新建文件夹
+            createFolder: function () {
+                this.$refs['formInline'].validate((valid) => {
+                    if (valid) {
+                        var that = this
+                        var url = "/Project/ChangeFile?&ApplyManId=" + DingData.userid + "&ApplyMan=" + DingData.nickName + "&ChangeType=0&Path="
+                        for (let p of this.pathList) {
+                            url = url + '\\' + p
+                        }
+                        url = url + '\\' + this.formInline.name
+                        $.ajax({
+                            url: url,
+                            success: function (data) {
+                                data = JSON.parse(data)
+                                console.log('/新建文件夹')
+                                console.log(url)
+                                console.log(data)
+                                that.getFileData()
+                                that.dialogFormVisible = false
+                            },
+                            error: function (err) {
+                                console.error(err)
+                            }
+                        })
+                    }
+                })
+            },
+            //新建项目
+            createProject: function () {
+
+            },
+            //点击节点跳转文件夹
+            clickNode: function (obj) {
+                console.log(obj)
+            }
+        },
+        filters: {
+            substring: function (str) {
+                if (str.length <= 11) return str
+                return str.substring(0,10) + '...'
+            }
+        },
+        created: function () {
+            this.getFileData()
+            loadHtml("mainPage", "partPage")
+        }
+    })
+
+</script>
+
+
+

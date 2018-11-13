@@ -1,0 +1,296 @@
+﻿@{
+    Layout = null;
+}
+
+<!--右侧实体内容-->
+<div id="partPage">
+    <!--标题-->
+    <div class="head-fixed" onclick="loadPage('/Main/approval')">
+        <i class="el-icon-arrow-left"></i>
+        项目列表-{{nodeInfo.NodeName}}
+    </div>
+    <!--检索项目表单-->
+    <el-form :inline="true" :model="formInline" class="demo-form-inline"
+             size="medium">
+        <el-form-item label="关键字">
+            <el-input v-model="formInline.key" style="width:200px;"
+                      placeholder="请输入搜索关键字"></el-input>
+        </el-form-item>
+        <!--高级检索-时间-->
+        <template v-if="superSearch">
+            <el-form-item label="开始日期">
+                <el-date-picker v-model="formInline.time"
+                                type="daterange"
+                                :picker-options="pickerOptions"
+                                value-format="yyyy-MM-dd"
+                                range-separator="至"
+                                start-placeholder="开始日期"
+                                end-placeholder="结束日期">
+                </el-date-picker>
+            </el-form-item>
+
+            <!--高级检索-表单选项-->
+            <el-form-item>
+                <el-checkbox-group v-model="formInline.projectState" :min="1">
+                    <el-checkbox v-for="t in status" :label="t" :key="t">{{t}}</el-checkbox>
+                </el-checkbox-group>
+            </el-form-item>
+        </template>
+
+        <el-form-item>
+            <el-button type="primary" v-on:click="getProject">搜索</el-button>
+            <span v-if="superSearch" v-on:click="superSearch = !superSearch" class="clickable-text">关闭高级搜索</span>
+            <span v-else v-on:click="superSearch = !superSearch" class="clickable-text">高级搜索</span>
+        </el-form-item>
+    </el-form>
+    <!--表格實體-->
+    <el-table :data="tableData" stripe border>
+        <el-table-column type="expand">
+            <template slot-scope="props">
+                <el-form label-position="left" inline class="table-expand">
+                    <span>创建时间:{{ props.row.CreateTime }}</span>&nbsp;&nbsp;
+                    <span>开始时间:{{ props.row.StartTime }}</span>&nbsp;&nbsp;
+                    <span>结束时间:{{ props.row.EndTime }}</span><br />
+                    <span>小组成员:{{ props.row.TeamMembers }}</span>&nbsp;
+                    <br />&nbsp;
+                </el-form>
+            </template>
+        </el-table-column>
+        <el-table-column prop="ProjectId" label="项目编号"></el-table-column>
+        <el-table-column prop="ProjectName" label="项目名称"></el-table-column>
+        <el-table-column prop="DeptName" label="部门名称"></el-table-column>
+        <el-table-column prop="ApplyMan" label="创建人"></el-table-column>
+        <el-table-column prop="ResponsibleMan" label="项目负责人"></el-table-column>
+        <el-table-column prop="showProjectState" label="状态"></el-table-column>
+        <el-table-column label="操作" style="width:300px;">
+            <template slot-scope="scope" style="width:300px;">
+                <el-button size="mini" v-on:click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                @*<el-button size="mini" type="danger" v-on:click="handleDelete(scope.$index, scope.row)">删除</el-button>*@
+            </template>
+        </el-table-column>>
+    </el-table>
+    <!--底部翻頁-->
+    <div style="text-align:right">
+        <el-pagination v-on:size-change="handleSizeChange"
+                       v-on:current-change="handleCurrentChange"
+                       :current-page="currentPage"
+                       :page-sizes="[1, 3, 5, 10]"
+                       :page-size="5"
+                       layout="total, sizes, prev, pager, next, jumper"
+                       :total="totalRows">
+        </el-pagination>
+    </div>
+    <!--编辑项目表单-->
+    <el-dialog title="编辑项目" :visible.sync="dialogFormVisible">
+        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm"
+                 enctype="multipart/form-data" :inline="true">
+            <template>
+                <el-form-item label="项目名称" prop="ProjectName">
+                    <el-input v-model="ruleForm.ProjectName" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="项目编号" prop="ProjectId">
+                    <el-input v-model="ruleForm.ProjectId" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="承担部门">
+                    <el-input v-model="ruleForm.DeptName"></el-input>
+                </el-form-item>
+                <el-form-item label="状态" required="required">
+                    <el-select v-model="ruleForm.ProjectState" :disabled="true">
+                        <el-option v-for="s of status" :label="s" :value="s" key="s"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="公司名称" required="required">
+                    <el-input v-model="ruleForm.CompanyName" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="项目类型" required="required">
+                    <el-input v-model="ruleForm.ProjectType" :disabled="true"></el-input>
+                </el-form-item>
+                <el-form-item label="项目负责人" required="required">
+                    <span>{{ResponsibleMan[0].name}} &nbsp;</span>
+                    <el-button class="button-new-tag" size="small" v-on:click="addMan">+ 选择</el-button>
+                </el-form-item>
+                <el-form-item label="项目组成员" required="required">
+                    <span v-for="p in groupPeople">{{p.name}} &nbsp;</span>
+                    <el-button class="button-new-tag" size="small" v-on:click="addGroup">+ 选择</el-button>
+                </el-form-item>
+                <el-form-item label="开始时间" required="required">
+                    <el-input v-model="ruleForm.StartTime"></el-input>
+                </el-form-item>
+                <el-form-item label="结束时间" required="required">
+                    <el-input v-model="ruleForm.EndTime"></el-input>
+                </el-form-item>
+                <hr />
+                <el-form-item>
+                    <el-button type="primary" v-on:click="editProject('ruleForm')">编辑</el-button>
+                </el-form-item>
+            </template>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button v-on:click="dialogFormVisible = false">取 消</el-button>
+            @*<el-button type="primary" v-on:click="dialogFormVisible = false">完 成</el-button>*@
+        </div>
+    </el-dialog>
+</div>
+
+
+<script>
+    var Index = 0
+    var id = ''
+    var VUE = new Vue({
+        el: "#partPage",
+        mixins: [mixin],
+        data: function () {
+            return {
+                data: [],
+                tableData: [],
+                superSearch: false,
+                nodeInfo: {},
+                formInline: {
+                    key: '',
+                    time: '',
+                    projectState: ["在研", "已完成", "终止"]
+                },
+                ruleForm: {
+                    ProjectName: '',
+                    ProjectId: '',
+                    DeptName: '',
+                    ProjectState: '',
+                    ProjectType: '',
+                    StartTime: '',
+                    EndTime: '',
+                    CompanyName: ''
+                },
+                status: ["在研", "已完成", "终止"],
+                ResponsibleMan: [{ name: '', emplId: '' }],
+                groupPeople: [{ name: '', emplId: '' }],
+                dialogFormVisible: false,
+                isIndeterminate: true
+            }
+        },
+        methods: {
+            //获取项目数据getProject
+            getProject() {
+                var that = this
+                if (this.formInline.time) {
+                    var param = {
+                        key: this.formInline.key,
+                        startTime: this.formInline.time[0],
+                        endTime: this.formInline.time[1],
+                        projectState: this.formInline.projectState.join('_')
+                    }
+                }
+                else {
+                    var param = {
+                        key: this.formInline.key,
+                        projectState: this.formInline.projectState.join('_')
+                    }
+                }
+                url = "/Project/QuaryProjectInfo" + _formatQueryStr(param)
+                $.ajax({
+                    url: url,
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        console.log("获取项目列表数据 QuaryProjectInfo")
+                        console.log(url)
+                        console.log(data)
+                        var date = new Date()
+                        var dateStr = _dateToString(date)
+                        console.log(dateStr)
+                        for (let d of data) {
+                            d["showProjectState"] = d.ProjectState
+                            if (d.ProjectState == '在研' && dateStr > d.EndTime) {
+                                //d.ProjectState += '-已延期'
+                                d.showProjectState += '-已延期'
+                            }
+                        }
+                        that.data = data
+                        that.totalRows = data.length
+                        that.getData()
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.log(XMLHttpRequest.status);
+                    }
+                })
+            },
+            //编辑项目并保存
+            editProject(formName) {
+                var that = this
+                this.$refs[formName].validate((valid) => {
+                    if (valid && this.ResponsibleMan[0].name && this.groupPeople[0].name ) {
+                        that.disablePage = true
+                        let names = []
+                        let ids = []
+                        for (let p of this.groupPeople) {
+                            names.push(p.name)
+                            ids.push(p.emplId)
+                        }
+                        var param = {}
+                        for (let r in that.ruleForm) {
+                            param[r] = that.ruleForm[r]
+                        }
+                        param["Id"] = id
+                        param["ResponsibleMan"] = this.ResponsibleMan[0].name
+                        param["ResponsibleManId"] = this.ResponsibleMan[0].emplId
+                        param["TeamMembers"] = names.join(',')
+                        param["TeamMembersId"] = ids.join(',')
+                        console.log(param)
+                        $.ajax({
+                            url: "/Project/ProjectInfoModify",
+                            type: "POST",
+                            dataType: "json",
+                            data: param,
+                            success: function (data) {
+                                console.log("编辑项目")
+                                console.log(data)
+                                that.$alert(data.errorMessage, '提示信息', {
+                                    confirmButtonText: '确定',
+                                    callback: action => {
+                                        that.dialogFormVisible = false
+                                        that.getProject()
+                                    }
+                                })
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                console.log(XMLHttpRequest.status);
+                                console.log(XMLHttpRequest);
+                            }
+                        })
+                    }
+                    else {
+                        that.$alert('表单信息不全或有误', '提示信息', {
+                            confirmButtonText: '确定'
+                        })
+                    }
+                })
+            },
+            //打开编辑表单
+            handleEdit(index, row) {
+                console.log(index)
+                console.log(row)
+                this.ResponsibleMan[0] = { name: row.ResponsibleMan, emplId: row.ResponsibleManId }
+                let groupPeople = []
+                let members = row.TeamMembers.split(',')
+                let membersId = row.TeamMembersId.split(',')
+                for (var i = 0; i <= members.length; i++) {
+                    groupPeople.push({ name: members[i], emplId: membersId[i] })
+                }
+                id = row.Id
+                this.groupPeople = groupPeople
+                this.dialogFormVisible = true
+                for (let r in row) {
+                    this.ruleForm[r] = row[r]
+                }
+            },
+            handleDelete(index, row) {
+                console.log(index, row);
+            }
+        },
+        created: function () {
+            this.getProject()
+            loadHtml("mainPage", "partPage")
+        }
+    })
+
+
+</script>

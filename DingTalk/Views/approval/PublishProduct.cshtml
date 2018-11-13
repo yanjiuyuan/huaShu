@@ -1,0 +1,202 @@
+﻿@{
+    Layout = null;
+}
+
+<!--右侧实体内容-->
+<div id="partPage">
+    <!--标题-->
+    <div class="head-fixed" onclick="loadPage('/Main/approval')">
+        <i class="el-icon-arrow-left"></i>
+        发布产品信息
+    </div>
+    <!--创建项目表单-->
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm"
+             enctype="multipart/form-data">
+        <template>
+            <el-form-item label="标题" prop="Title">
+                <el-input v-model="ruleForm.Title"></el-input>
+            </el-form-item>
+            @*<el-form-item label="产品类别" required="required">
+                <el-select v-model="ruleForm.Type">
+                    <el-option v-for="s of types" :label="s" :value="s" key="s"></el-option>
+                </el-select>
+            </el-form-item>*@
+            <el-form-item label="内容简介" prop="Abstract">
+                <el-input v-model="ruleForm.Abstract" type="textarea"></el-input>
+            </el-form-item>
+
+            <el-form-item label="上传图片">
+                <el-upload action="/drawingupload/Upload?IsCopy=true"
+                           list-type="picture-card"
+                           :file-list="imageList"
+                           :on-preview="handlePictureCardPreview"
+                           :on-remove="handlePictureRemove"
+                           :on-success="handlePictureCardSuccess"
+                           :before-upload="beforePictureUpload">
+                    <i class="el-icon-plus"></i>
+                </el-upload>
+                <el-dialog :visible.sync="dialogVisible">
+                    <img width="100%" :src="dialogImageUrl" alt="">
+                </el-dialog>
+            </el-form-item>
+            <el-form-item label="上传word" required="required">
+                <el-upload class="upload-demo"
+                           drag
+                           :file-list="fileList"
+                           action="/drawingupload/Upload"
+                           :on-remove="HandleFileRemove"
+                           :before-upload="beforeFileUpload"
+                           :on-success="HandleFileSuccess"
+                           multiple>
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                    <div class="el-upload__tip" slot="tip">不超过30M</div>
+                </el-upload>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" v-on:click="addProject" :disabled="disablePage">发布</el-button>
+                <el-button type="primary" v-on:click="getData">获取产品列表</el-button>
+            </el-form-item>
+        </template>
+    </el-form>
+
+    <div>
+        <!--新闻列表表格實體-->
+        <el-table :data="data" stripe border>
+            <el-table-column prop="Title" label="标题"></el-table-column>
+            @*<el-table-column prop="Type" label="产品类别"></el-table-column>*@
+            <el-table-column prop="CreateTime" label="发布时间"></el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <el-button size="mini" type="danger"
+                               v-on:click="deleteNews(scope.$index, scope.row)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <!--底部翻頁-->
+        <div style="text-align:right">
+            <el-pagination v-on:size-change="handleSizeChange"
+                           v-on:current-change="handleCurrentChange"
+                           :current-page="currentPage"
+                           :page-sizes="[1, 3, 5, 10]"
+                           :page-size="pageSize"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="totalRows">
+            </el-pagination>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var Index = 0
+    var date = new Date()
+    var demo = new Vue({
+        el: "#partPage",
+        mixins: [mixin],
+        data: function () {
+            return {
+                types: ['综合案例'],
+                imageList: [],
+                fileList: [],
+                //图片上传参数
+                dialogImageUrl: '',
+                dialogVisible: false,
+                uploadUrl: '',
+                ruleForm: {
+                    ImageUrl: '',
+                    OldImageUrl: '',
+                    Title: '',
+                    Type: '综合案例',
+                    Abstract: '',
+                    ImageUrl: '',
+                    BigType: '产品',
+                    Contents: '',
+                    CreateTime: _dateToString(date)
+                },
+                data: []
+            }
+        },
+        methods: {
+            //添加新闻
+            addProject() {
+                var that = this
+                this.$refs['ruleForm'].validate((valid) => {
+                    if (valid) {
+                        that._postData('/NewsAndCases/Save', function (data) {
+                            that.$alert('恭喜提交成功', '提示信息', {
+                                confirmButtonText: '确定',
+                                callback: action => {
+                                    goHome()
+                                }
+                            })
+                        }, that.ruleForm)
+                    }
+                })
+
+            },
+            beforeFileUpload(file) {
+                file.name = 'helloWorld'
+                const isDoc = file.name.indexOf('.doc') > 0
+                const isLt2M = file.size / 1024 / 1024 < 30
+                if (!isDoc) {
+                    this.$message.error('上传文件只能是 word !')
+                    return false
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传文件大小不能超过 30MB!')
+                    return false
+                }
+                console.log('this.disablePage = true')
+                this.disablePage = true
+                return true
+            },
+            HandleFileSuccess(response, file, fileList) {
+                var that = this
+                that._getData('/NewsAndCases/WordPathToHtml', function (result) {
+                    if (result.error.errorCode != 0) {
+                        that.elementAlert('报错了', result.error.errorMessage)
+                        return
+                    }
+                    that.ruleForm.Contents = result.data
+                    that.disablePage = false
+                    console.log('that.disablePage = false')
+                }, {
+                        wordPath: response.Content
+                    })
+            },
+            //获取产品数据
+            getData() {
+                var that = this
+                var param = {
+                    bigType: this.ruleForm.BigType,
+                    type: '综合案例',
+                    pageIndex: this.currentPage,
+                    pageSize: this.pageSize
+                }
+                this._getData("/NewsAndCases/Read", function (result) {
+                    that.data = result.data
+                    that.totalRows = result.count
+                }, param)
+            },
+            //删除产品
+            deleteNews(index, news) {
+                var that = this
+                that._getData('/NewsAndCases/DeleteById', function (result) {
+                    if (result.error.errorCode != 0) {
+                        that.elementAlert('报错了', result.error.errorMessage)
+                        return
+                    }
+                    that.getData()
+                }, {
+                        id: news.Id
+                    })
+            }
+        },
+        created: function () {
+            loadHtml("mainPage", "partPage")
+        }
+    })
+
+
+</script>

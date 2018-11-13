@@ -1,0 +1,780 @@
+﻿@{
+    Layout = null;
+}
+
+
+
+<!--右侧实体内容-->
+<el-main id="partPage" style="position:relative;">
+    <div class="head-fixed" onclick="loadPage('/Main/Approval_list')">
+        <i class="el-icon-arrow-left"></i>
+        审批处理-{{nodeInfo.NodeName}}
+    </div>
+    <template v-if="FlowId == '6'" v-for="(d,index) in dataArr">
+        <h2 style="text-align:center;">{{d.Sorts}}件列表</h2>
+        <!--表格實體-->
+        <el-table :data="d.tableData" stripe border>
+            <el-table-column v-for="(value,key) in items" :prop="key" :label="value" :key="key">
+            </el-table-column>
+        </el-table>
+        <!--底部翻頁-->
+        <div style="text-align:right">
+            <el-pagination v-on:current-change="handleBomPageChange($event,index)"
+                           :current-page="d.currentPage"
+                           :page-sizes="[5]"
+                           :page-size="5"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="d.totalRows">
+            </el-pagination>
+        </div>
+    </template>
+    <template v-if="FlowId != '6'">
+        <!--表格實體-->
+        <el-table :data="tableData" stripe border>
+            <el-table-column v-for="(value,key) in items" :prop="key" :label="value" :key="key">
+            </el-table-column>
+            @*<el-table-column prop="Price" label="单价(实际)" v-if="FlowId == '1' && nodeInfo.NodeId >= '2'">
+                <template slot-scope="scope">
+                    <el-input v-model="scope.row.Price" prop="Count" :disabled="nodeInfo.NodeId > '2'"
+                              :class="{ redborder:scope.row.Price ==''}"></el-input>
+                </template>
+            </el-table-column>*@
+        </el-table>
+        <!--底部翻頁-->
+        <div style="text-align:right">
+            <el-pagination v-on:size-change="handleSizeChange"
+                           v-on:current-change="handleCurrentChange"
+                           :current-page="currentPage"
+                           :page-sizes="[1, 3, 5, 10]"
+                           :page-size="5"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="totalRows">
+            </el-pagination>
+        </div>
+    </template> 
+
+
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="150px" class="demo-ruleForm"
+             id="uploadForm" enctype="multipart/form-data">
+        <el-form-item label="标题" v-if="ruleForm.Title">
+            <el-input v-model="ruleForm.Title" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="项目名" v-if="ruleForm.ProjectName">
+            <el-input v-model="ruleForm.ProjectName" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="申请人">
+            <el-input v-model="ruleForm.ApplyMan" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="套数" v-if="FlowId == 23">
+            <el-input v-model="ruleForm.counts" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="备注">
+            <el-input v-model="ruleForm.Remark" :disabled="true"></el-input>
+        </el-form-item>
+        <!--图片展示-->
+        <el-form-item v-if="imageList.length > 0" label="相关图片">
+            <el-upload action=""
+                       list-type="picture-card"
+                       :on-preview="handlePictureCardPreview"
+                       :file-list="imageList"
+                       :disabled="true">
+            </el-upload>
+        </el-form-item>
+        <!--PDF展示-->
+        <el-form-item v-if="pdfList.length > 0" label="PDF图纸">
+            <el-button type="primary" v-on:click="downloadAllPdf">下载所有图纸</el-button>
+            <el-card class="box-card">
+                <div v-for="f in pdfList" :key="f.name" class="text item">
+                    <span>{{ f.name }}</span>
+                    <el-button size="mini" type="primary" v-on:click="downloadFile(f.mediaId)" :disabled="disablePage">下载</el-button>
+                    <el-button size="mini" type="primary" v-on:click="clickFile(f.url,f.name,f.mediaId)" :disabled="disablePage">预览</el-button>
+
+                    <el-switch v-if="index == 0 && FlowId == '6'" v-model="f.state"
+                               active-color="#13ce66" inactive-color="#ff4949"
+                               active-text="通过" inactive-text="不通过"
+                               active-value="1" inactive-value="0"
+                               v-on:change="setPdfState">
+                    </el-switch>
+                    <span v-if="index == 2 && FlowId == '6'">{{f.state == '1'? '通过' : '不通过'}}</span>
+                </div>
+            </el-card>
+            <el-button type="primary" v-on:click="stampAndGet" v-if="ifShowStamppBtn">盖章并获取</el-button>
+        </el-form-item>
+        <el-form-item label="操作">
+            <el-button type="primary" v-on:click="outPutBom">导出Bom表</el-button>
+        </el-form-item>
+        <el-button type="primary" v-on:click="stampAndGet2" v-if="ifShowStamppBtn2">盖章并获取</el-button>
+        <!--相关文件-->
+        <el-form-item v-if="fileList.length > 0" label="相关文件">
+            <el-card class="box-card">
+                <div v-for="f in fileList" :key="f.name" class="text item">
+                    <span>{{ f.name }}</span>
+                    <el-button size="mini" type="primary" v-on:click="downloadFile(f.mediaId)">下载</el-button>
+                </div>
+            </el-card>
+        </el-form-item>
+        <!--添加审批人-->
+        <sam-approver-list :nodeList="nodeList" :single="true" :nodedata="nodeInfo"></sam-approver-list>
+
+
+        <!--添加抄送人-->
+        @*<sam-addapprover :preset="preCopy" :approvers="copyers">
+        </sam-addapprover>*@
+        <template v-if="index==0">
+            <el-form-item label="审批意见" prop="mark">
+                <el-input v-model="ruleForm.mark"></el-input>
+            </el-form-item>
+            <el-form-item v-for="p in specialRoles" :key="p.name" :label="p.label" prop="mark" v-if="nodeInfo.NodeName == p.name">
+                <el-form-item>
+                    <el-alert v-for="(i,index) in p.intrudations" :key="index" type="warning" :show-icon="index == 0" :closable="false" style="line-height:12px;"
+                              :title="i">
+                    </el-alert>
+                </el-form-item>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" v-on:click="onSubmit" :disabled="disablePage">同意</el-button>
+                <span> - </span>
+                <el-button v-if="nodeInfo.IsBack" type="warning" v-on:click="reSubmit" :disabled="disablePage">退回</el-button>
+            </el-form-item>
+        </template>
+        <template v-if="index==2 && state=='被退回'">
+            <el-form-item>
+                <el-button type="primary" v-on:click="reApproval" :disabled="disablePage">重新发起</el-button>
+            </el-form-item>
+        </template>
+        <template v-if="index==2 && state=='未完成'">
+            <el-form-item>
+                <ding :dinglist="dingList"></ding>
+                <el-button type="warning" v-on:click="rebackSubmit" :disabled="disablePage">撤回</el-button>
+            </el-form-item>
+        </template>
+        <template v-if="index==3 && FlowId==8">
+            <el-form-item>
+                <el-button type="primary" v-on:click="printExcel" :disabled="disablePage">打印excel</el-button>
+            </el-form-item>
+        </template>
+    </el-form>
+
+    <!--显示PDF-->
+    <div @*v-show="frameShow"*@>
+        <div id="dialog" title="PDF画板">
+            <div style="font-size:14px;">
+                <fieldset style="float:left;width:250px;">
+                    <legend>工具</legend>
+                    <div id="toolsOptions">
+                        <input type="radio" id="tools_pencil" name="toolsOption" checked="checked"><label for="tools_pencil">画笔</label> &nbsp;
+                        @*<input type="radio" id="tools_eraser" name="toolsOption"><label for="tools_eraser">橡皮擦</label> &nbsp;
+                            <input type="radio" id="tools_trash" name="toolsOption"><label for="tools_trash">清空</label>*@
+                        <div style="border-top:1px dashed gray;margin-top:8px;padding-top:8px;">
+                            <span>
+                                <button v-if="index == 0" id="tools_save">保存</button>&nbsp;&nbsp;&nbsp;
+                                <button id="tools_turn_right">正转</button>
+                                <button id="tools_turn_left">逆转</button>
+                                @*<button id="tools_undo">撤回</button>&nbsp;&nbsp;&nbsp;
+                                 <button id="tools_redo">redo</button>*@
+                            </span>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset style="float:left;">
+                    <legend>多边形</legend>
+                    <div>
+                        <input type="radio" id="tools_line" name="toolsOption"><label for="tools_line">直线</label>
+                        <input type="radio" id="tools_rectangle" name="toolsOption"><label for="tools_rectangle">矩形</label>
+
+                        @*<input type="radio" id="tools_circle" name="toolsOption"><label for="tools_circle">椭圆</label>
+                            <input type="radio" id="tools_text" name="toolsOption"><label for="tools_text">文字</label>*@
+
+                        <div style="border-top:1px dashed gray;margin-top:8px;padding-top:8px;">
+                            <span>
+                                <input type="radio" id="tools_circle" name="toolsOption"><label for="tools_circle">椭圆</label>
+                                <input type="radio" id="tools_text" name="toolsOption"><label for="tools_text">文字</label>
+                            </span>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset style="float:left;width:180px;">
+                    <legend>线条设置</legend>
+                    <span style="float: left;margin-top: 6px;">线条粗细: </span>
+                    <select id="penWidth">
+                        <option value="1" selected>1px</option>
+                        <option value="2">2px</option>
+                        <option value="4">4px</option>
+                        <option value="6">6px</option>
+                        <option value="8">8px</option>
+                        <option value="12">12px</option>
+                        <option value="14">14px</option>
+                        <option value="16">16px</option>
+                        <option value="18">18px</option>
+                    </select>
+                    <div style="border-top:1px dashed gray;margin-top:8px;padding-top:8px;">
+                        <span>边框色:<input id="colorpicker-popup" type="text" value="000000" style="width: 72px;display:none; "></span>&nbsp;
+                        <!--span>填充色:<input id="colorpicker-popup2" type="text"  value="fe9810" style="width: 72px;display:none; "></span-->
+                    </div>
+                </fieldset>
+                <fieldset style="float:left;width:160px;">
+                    <legend>字体设置</legend>
+                    <span>
+                        <span style="float: left;margin-top: 6px;">字体大小: </span>
+                        <select id="fontSize">
+                            <option value="22px" selected>22px</option>
+                            <option value="24px">24px</option>
+                            <option value="26px">26px</option>
+                            <option value="28px">28px</option>
+                            <option value="30px">30px</option>
+                            <option value="32px">32px</option>
+                            <option value="34px">34px</option>
+                            <option value="36px">36px</option>
+                        </select>
+                    </span>
+                    <br />
+                    <span>
+                        <span style="float: left;margin-top: 6px;">字体选择:</span>
+                        <select id="fontType" style="top:20px;">
+                            <option value="宋体">宋体</option>
+                            <option value="微软雅黑">微软雅黑</option>
+                            <option value="仿宋">仿宋</option>
+                            <option value="Arial" selected>Arial</option>
+                            <option value="Consolas">Consolas</option>
+                        </select>
+                    </span>
+                    <span style="font-weight:bold;"><input type="checkbox" id="boldOption" name="fontOption"><label for="boldOption">B</label></span>
+                    <span style="font-style: italic;"><input type="checkbox" id="italicOption" name="italicOption"><label for="italicOption">I</label></span>
+                </fieldset>
+
+                <div style="clear:both;"></div>
+            </div>
+
+            <div style="background:white;position:relative;width:1200px;height:900px;" id="container">
+                <div id="temp" style="border:1px solid gray;width:1px;height:1px;position:absolute;display:none;"></div>
+
+                <canvas id="myCanvas" width="1200" height="900" class="container_pencil"></canvas>
+            </div>
+            <span id="show" style="display:none;"></span>
+        </div>
+    </div>
+    <div class="mask" id="mask"></div>
+    <!--显示加載過程-->
+
+
+</el-main>
+<script>
+    var pdfUrl = ''
+    var pdfName = ''
+    var pdfMediaId = ''
+    var taskId = 0
+
+    var stampRole = {}//圖紙審批 可打印并 下載的角色信息
+</script>
+
+<script>
+
+    var state = ''
+    var pdfUrl = ''
+    if (UrlObj.flowid) {
+        FlowId = UrlObj.flowid
+        NodeId = UrlObj.nodeid
+        TaskId = UrlObj.taskid
+        state = UrlObj.state
+        Id = UrlObj.id
+        var Index = UrlObj.index
+    }
+    $("#mask").hide()
+    var items = {}
+    var allData = {}
+
+    var FileUrl = ''
+    var bomUrl = ''
+    var dataArr = [
+        {
+            data: [],
+            tableData: [],
+            Sorts: '标准',
+            currentPage: 1,
+            totalRows: 0,
+            items: {}
+        },
+        {
+            data: [],
+            tableData: [],
+            Sorts: '自制',
+            currentPage: 1,
+            totalRows: 0,
+            items: {}
+        },
+        {
+            data: [],
+            tableData: [],
+            Sorts: '外购',
+            currentPage: 1,
+            totalRows: 0,
+            items: {}
+        }]
+    if (FlowId != '6' && FlowId != '23') dataArr = []
+    switch (FlowId) {
+        case '1':
+            items = {
+                CodeNo: '物料编码',
+                Name: '物料名称',
+                Standard: '规格型号',
+                Unit: '单位',
+                Count: '数量',
+                //ExpectPrice: '单价(预计)',
+                Purpose: '用途',
+                Mark: '备注'
+            }
+            bomUrl = "/OfficeSupplies/ReadTable?TaskId=" + TaskId
+            break;
+        case '6':
+            items = {
+                DrawingNo: '代号',
+                Name: '名称',
+                Count: '数量',
+                MaterialScience: '材料',
+                Unit: '单位',
+                Sorts: '类别',
+                SingleWeight: '单重',
+                AllWeight: '总重',
+                NeedTime: '需用日期',
+                Mark: '备注'
+            }
+            bomUrl = "/DrawingUpload/GetPurchase?TaskId=" + TaskId
+            break;
+        case '23':
+            items = {
+                DrawingNo: '代号',
+                Name: '名称',
+                Count: '数量',
+                MaterialScience: '材料',
+                Unit: '单位',
+                Sorts: '类别',
+                SingleWeight: '单重',
+                AllWeight: '总重',
+                //NeedTime: '需用日期',
+                //Mark: '备注'
+            }
+            bomUrl = "/PurchaseOrder/QuaryByTaskId?TaskId=" + TaskId
+            break;
+        case '8':
+            items = {
+                CodeNo: '物料编码',
+                Name: '物料名称',
+                Standard: '规格型号',
+                Unit: '单位',
+                Count: '数量',
+                Price: '单价(预计)',
+                Purpose: '用途',
+                UrgentDate: '需用日期',
+                Mark: '备注'
+            }
+            bomUrl = "/Purchase/ReadPurchaseTable?TaskId=" + TaskId
+            break;
+        case '12':
+            items = {
+                BigCode: '物料大类编码',
+                SmallCode: '物料小类编码',
+                Name: '物料名称',
+                Unit: '单位',
+                Standard: '型号规格',
+                SurfaceTreatment: '表面处理',
+                PerformanceLevel: '性能等级',
+                StandardNumber: '标准号',
+                Features: '典型特征',
+                purpose: '用途',
+                Remark: '备注'
+            }
+            bomUrl = "/ItemCodeAdd/GetTable?TaskId=" + TaskId
+            break;
+        case '18':
+            items = {
+                CodeNo: '物料编码',
+                Name: '物料名称',
+                Standard: '规格型号',
+                Unit: '单位',
+                Count: '数量',
+                ExpectPrice: '单价(预计)',
+                Price: '单价(实际)',
+                Purpose: '用途',
+                Dept: '部门',
+                Mark: '备注'
+            }
+            bomUrl = "/OfficeSuppliesPurchase/ReadTable?TaskId=" + TaskId
+            break;
+    }
+    var demo = new Vue({
+        el: "#partPage",
+        mixins: [mixin],
+        data: function () {
+            return {
+                preApprove: false,
+                preCopy: false,
+                imageList: imageList,
+                fileList: fileList,
+                pdfList: pdfList,
+                data: [],
+                items: items,
+                FlowId: FlowId,
+                tableData: [],
+                totalRows: 0,
+                nodeInfo: {},
+                nodeList: [],
+                ruleForm: {},
+                state: state,
+                tick: 50,
+                dataArr: dataArr,
+                index: Index,
+                frameUrl: '',
+                ifShowStamppBtn: false,
+                ifShowStamppBtn2: false,
+                frameShow: false
+            }
+        },
+        methods: {
+            //提交审批
+            onSubmit(formName) {
+                this.disablePage = true
+                var that = this
+                if (FlowId == '1') {
+                    let url = '/OfficeSupplies/ModifyTable'
+                    console.log(this.data)
+                    that._postData(url, function (data) {
+                        that.aggreSubmit({
+                            "Id": allData.Id,
+                            "Remark": that.ruleForm.mark,
+                            "Title": that.ruleForm.Title,
+                            "ProjectId": that.ruleForm.ProjectId
+                        }, {
+                                "ProjectId": that.ruleForm.ProjectId
+                            })
+                    }, that.data)
+                } else {
+                    this.aggreSubmit({
+                        "Id": allData.Id,
+                        "Remark": this.ruleForm.mark,
+                        "Title": this.ruleForm.Title,
+                        "ProjectId": this.ruleForm.ProjectId
+                    }, {
+                            "ProjectId": this.ruleForm.ProjectId
+                        })
+                }
+            },
+            //退回审批
+            reSubmit() {
+                this.disablePage = true
+                var that = this
+                var param = {
+                    "Id": allData.Id,
+                    "Remark": this.ruleForm.mark
+                }
+                this.returnSubmit(param)
+            },
+            //撤回审批
+            rebackSubmit() {
+                this.disablePage = true
+                var that = this
+                var param = {
+                    "Id": allData.Id,
+                    "NodeId": 0,
+                    "Remark": this.ruleForm.mark
+                }
+                this.returnSubmit(param)
+            },
+            
+            //图纸盖章并获取文件
+            stampAndGet() {
+                FileUrl = FileUrl.replace(/\\/g, '\\\\')
+                var paramObj = {
+                    UserId: DingData.userid,
+                    TaskId: TaskId,
+                    OldPath: FileUrl
+                }
+                var that = this
+                $.ajax({
+                    url: "/DrawingUpload/PrintAndSend",
+                    type: "POST",
+                    data: paramObj,
+                    dataType: "json",
+                    success: function (data) {
+                        //data = JSON.parse(data)
+                        console.log("/DrawingUpload/PrintAndSend1")
+                        console.log(paramObj)
+                        console.log(data)
+                        var alertStr = ''
+                        data.errorMessage ? alertStr = data.errorMessage : alertStr = data.errmsg
+                        that.$alert(alertStr, '反馈消息', {
+                            confirmButtonText: '确定',
+                            callback: action => {
+
+                            }
+                        });
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            },
+            stampAndGet2() {
+                var paramObj = {
+                    UserId: DingData.userid,
+                    TaskId: TaskId
+                }
+                var that = this
+                $.ajax({
+                    url: "/Purchase/PrintAndSend",
+                    type: "POST",
+                    data: paramObj,
+                    dataType: "json",
+                    success: function (data) {
+                        data = JSON.parse(data)
+                        console.log("/Purchase/PrintAndSend1")
+                        console.log(paramObj)
+                        console.log(data)
+                        var alertStr = ''
+                        data.errorMessage ? alertStr = data.errorMessage : alertStr = data.errmsg
+                        that.$alert(alertStr, '消息', {
+                            confirmButtonText: '确定',
+                            callback: action => {
+
+                            }
+                        });
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            },
+            downloadAllPdf() {
+                console.log(' start')
+                const loading = this.$loading({
+                    lock: true,
+                    text: 'Loading',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
+                var that = this 
+                let url = '/NewsAndCases/GetAllPDF'
+                that._getData(url, function (result) {
+                    console.log('/NewsAndCases/GetAllPDF')
+                    //console.log(result.data.replace("application/zip", "zip/octet-stream"))
+                    //window.location.href = result.data.replace("application/zip", "zip/octet-stream")
+                    loading.close()
+                    that.$alert('获取成功', '提示信息', {
+                        confirmButtonText: '确定'
+                    })
+                }, {
+                        taskId: TaskId,
+                        //applyManId: '093545544539955991'
+                        applyManId: DingData.userid
+                    })
+            },
+            outPutBom() {
+                var that = this
+                let url = '/DrawingUpload/GetExcelReport'
+                that._getData(url, function (data) {
+                    that.$alert('获取成功', '提示信息', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+
+                        }
+                    })
+                }, {
+                        taskId: TaskId,
+                        applyManId: DingData.userid
+                    })
+            },
+
+            //采购抄送打印excel
+            printExcel() {
+                var that = this
+                let url = '/api/PurchaseManage'
+                that._getData(url, function (data) {
+                    that.$alert('恭喜提交成功', '提示信息', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+                            
+                        }
+                    })
+                }, {
+                        taskId: TaskId,
+                        UserId: DingData.userid
+                    })
+            },
+
+            //获取bom表信息
+            getBomInfo() {
+                var that = this
+                $.ajax({
+                    url: bomUrl,
+                    type: "GET",
+                    success: function (data) {
+                        console.log("获取bom表信息ok")
+                        console.log(bomUrl)
+                        if (typeof (data) == 'string') data = JSON.parse(data)
+                        that.data = data
+                        if(FlowId == 23) that.data = data.data
+                        console.log(data)
+                        if (FlowId == 6) {
+                            for (let a of that.dataArr) {
+                                for (let d of data) {
+                                    if (a.Sorts == d.Sorts) {
+                                        a.data.push(d)
+                                    }
+                                }
+                                a.tableData = a.data.slice(0, 5)
+                                a.totalRows = a.data.length
+                            }
+                        } else {
+                            for (let d of that.data) {
+                                if (d.UrgentDate) d.UrgentDate = d.UrgentDate.substring(0,10)
+                            }
+                            that.getData()
+                            that.totalRows = that.data.length
+                        }
+
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                })
+            },
+            //圖紙審批bom表格翻页
+            handleBomPageChange(page, index) {
+                console.log(page)
+                console.log(index)
+                this.currentPage = page
+                this.dataArr[index].currentPage = page
+                this.getData()
+                this.dataArr[index].tableData = _cloneArr(this.tableData)
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                this.dialogVisible = true;
+            },
+            //文件点击操作
+            clickFile(fileUrl, name, mediaId) {
+                if (fileUrl.substring(fileUrl.length - 3) == 'pdf' || fileUrl.substring(fileUrl.length - 3) == 'PDF') {
+                    pdfUrl = fileUrl
+                    pdfName = name
+                    pdfMediaId = mediaId
+                    console.log(fileUrl)
+                    $("#mask").show()
+                    this.frameShow = true
+                    this.showPdf(fileUrl)
+                }
+
+            },
+            hideFrame() {
+                this.frameShow = false
+            },
+            //PDF文件查看后，点击按钮设置状态
+            setPdfState() {
+                var states = []
+                for (let p of this.pdfList) {
+                    states.push(p.state)
+                }
+                var url = "/File/UpdatePDFState?TaskId=" + TaskId + "&PDFState=" + states.join(",")
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                        console.log("PDF文件查看后，点击按钮设置状态")
+                        console.log(url)
+                        console.log(data)
+                    }
+                })
+            },
+
+            //獲取角色信息
+            showStamp(roleName) {
+                var that = this
+                var url = "/Role/GetRoleInfo?RoleName=" + roleName
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                        console.log("獲取角色信息")
+                        console.log(url)
+                        console.log(data)
+                        for (let d of data) {
+                            if (d.emplId == DingData.userid && (Index == "3" || Index == "2")) {
+                                that.ifShowStamppBtn = true
+                                if (FlowId == '8') that.ifShowStamppBtn2 = true
+                            }
+                        }
+                    }
+                })
+            },
+            //显示PDF画板
+            showPdf(url) {
+                var that = this
+                this.disablePage = true
+                pufUrl = url
+                console.log('show pdf')
+                const loading = this.$loading({
+                    lock: true,
+                    text: 'Loading',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
+                
+                //initui()
+                initUI()
+                
+                PDFJS.getDocument(url).then(function getPdfHelloWorld(pdf) {
+                    //
+                    // 获取第一页数据
+                    //
+                    pdf.getPage(1).then(function getPageHelloWorld(page) {
+                        var scale = 1;
+                        var viewport = page.getViewport(scale);
+                        var renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport
+                        };
+                        page.render(renderContext);
+                        that.disablePage = false
+                        loading.close()
+                        console.log('render pdf')
+                    });
+                });
+
+            }
+
+
+        },
+        created: function () {
+            //获取下一个节点的审批人id
+            this.GetDingList(TaskId)
+            if (FlowId == '8') {
+                this.showStamp("采购管理员")
+            }
+            if (FlowId == '6') {
+                this.showStamp("图纸管理员")
+            }
+            if (FlowId == '8' && (Index == "3" || Index == "2")) {
+                this.ifShowStamppBtn2 = true
+            }
+            this.getBomInfo()
+            for (let s of this.specialRoles) {
+                this.specialRoleNames.push(s.name)
+                this.getSpecialRoleInfo(s.name)
+            }
+            PDFJS.workerSrc = '../Scripts/pdf.worker.js';//加载核心库
+            loadHtml("mainPage", "partPage")
+        }
+    })
+    getFormData(demo)
+
+</script>
+
+
+
+
+<script>
+    //初始化
+    $(function () {
+        $("#dialog").hide()
+    })
+</script>
+
+<script src="~/Scripts/canvas.js"></script>
+
+
