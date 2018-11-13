@@ -75,12 +75,11 @@ namespace DingTalk.Controllers
         /// 采购表单读取
         /// </summary>
         /// <param name="TaskId">流水号</param>
-        /// <param name="purchaseType">采购类型</param>
         /// <param name="PurchaseMan">采购员名称(可不传)</param>
         /// <returns></returns>
         [Route("ReadPurchaseTable")]
         [HttpGet]
-        public string PurseTableRead(string TaskId,string purchaseType,string PurchaseMan)
+        public string PurseTableRead(string TaskId,string PurchaseMan)
         {
             try
             {
@@ -90,12 +89,12 @@ namespace DingTalk.Controllers
                     if (string.IsNullOrEmpty(PurchaseMan))
                     {
                         PurchaseTableList = context.PurchaseTable.Where
-                       (p => p.TaskId == TaskId && p.purchaseType == purchaseType).ToList();
+                       (p => p.TaskId == TaskId ).ToList();
                     }
                     else
                     {
                         PurchaseTableList = context.PurchaseTable.Where
-                      (p => p.TaskId == TaskId && p.purchaseType == purchaseType && p.PurchaseMan== PurchaseMan).ToList();
+                      (p => p.TaskId == TaskId  && p.PurchaseMan== PurchaseMan).ToList();
                     }
                   
                 }
