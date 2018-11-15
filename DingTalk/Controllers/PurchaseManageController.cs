@@ -79,7 +79,7 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [Route("ReadPurchaseTable")]
         [HttpGet]
-        public string PurseTableRead(string TaskId,string PurchaseManId)
+        public string PurseTableRead(string TaskId,string PurchaseManId="")
         {
             try
             {
