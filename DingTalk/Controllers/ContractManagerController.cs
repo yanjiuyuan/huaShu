@@ -21,28 +21,43 @@ namespace DingTalk.Controllers
         /// 新增合同
         /// </summary>
         /// <param name="contract"></param>
+        /// <param name="ApplyManId">用户Id</param>
         /// <returns></returns>
         [HttpPost]
         [Route("Add")]
-        public object Add(Contract contract)
+        public object Add(Contract contract, string ApplyManId)
         {
             try
             {
-                EFHelper<Contract> eFHelper = new EFHelper<Contract>();
-                if (eFHelper.Add(contract) == 1)
+                using (DDContext context = new DDContext())
                 {
-                    return new NewErrorModel()
+                    if (context.Roles.Where(r => r.RoleName == "合同管理员" && r.UserId == ApplyManId).ToList().Count > 0)
                     {
-                        error = new Error(0, "保存成功！", "") { },
-                    };
-                }
-                else
-                {
-                    return new NewErrorModel()
+                        EFHelper<Contract> eFHelper = new EFHelper<Contract>();
+                        if (eFHelper.Add(contract) == 1)
+                        {
+                            return new NewErrorModel()
+                            {
+                                error = new Error(0, "保存成功！", "") { },
+                            };
+                        }
+                        else
+                        {
+                            return new NewErrorModel()
+                            {
+                                error = new Error(1, "保存失败！", "") { },
+                            };
+                        }
+                    }
+                    else
                     {
-                        error = new Error(1, "保存失败！", "") { },
-                    };
+                        return new NewErrorModel()
+                        {
+                            error = new Error(1, "用户没有权限！", "") { },
+                        };
+                    }
                 }
+               
 
             }
             catch (Exception ex)
@@ -60,19 +75,33 @@ namespace DingTalk.Controllers
         /// 修改合同
         /// </summary>
         /// <param name="contract"></param>
+        /// <param name="ApplyManId">用户Id</param>
         /// <returns></returns>
         [HttpPost]
         [Route("Modify")]
-        public object Modify(Contract contract)
+        public object Modify(Contract contract, string ApplyManId)
         {
             try
             {
-                EFHelper<Contract> eFHelper = new EFHelper<Contract>();
-                eFHelper.Modify(contract);
-                return new NewErrorModel()
+                using (DDContext context = new DDContext())
                 {
-                    error = new Error(0, "修改成功！", "") { },
-                };
+                    if (context.Roles.Where(r => r.RoleName == "合同管理员" && r.UserId == ApplyManId).ToList().Count > 0)
+                    {
+                        EFHelper<Contract> eFHelper = new EFHelper<Contract>();
+                        eFHelper.Modify(contract);
+                        return new NewErrorModel()
+                        {
+                            error = new Error(0, "修改成功！", "") { },
+                        };
+                    }
+                    else
+                    {
+                        return new NewErrorModel()
+                        {
+                            error = new Error(1, "用户没有权限！", "") { },
+                        };
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -87,18 +116,34 @@ namespace DingTalk.Controllers
         /// 根据Id删除合同
         /// </summary>
         /// <param name="Id"></param>
+        /// <param name="ApplyManId">用户Id</param>
         /// <returns></returns>
         [HttpGet]
         [Route("Del")]
-        public object Del(int Id)
+        public object Del(int Id, string ApplyManId)
         {
             try
             {
-                EFHelper<Contract> eFHelper = new EFHelper<Contract>();                Expression<Func<Contract, bool>> expression = c => c.Id == Id;                eFHelper.DelBy(expression);
-                return new NewErrorModel()
+                using (DDContext context = new DDContext())
                 {
-                    error = new Error(0, "删除成功！", "") { },
-                };
+                    if (context.Roles.Where(r => r.RoleName == "合同管理员" && r.UserId == ApplyManId).ToList().Count > 0)
+                    {
+                        EFHelper<Contract> eFHelper = new EFHelper<Contract>();
+                        Expression<Func<Contract, bool>> expression = c => c.Id == Id;
+                        eFHelper.DelBy(expression);
+                        return new NewErrorModel()
+                        {
+                            error = new Error(0, "删除成功！", "") { },
+                        };
+                    }
+                    else
+                    {
+                        return new NewErrorModel()
+                        {
+                            error = new Error(1, "用户没有权限！", "") { },
+                        };
+                    }
+                }
             }
             catch (Exception ex)
             {

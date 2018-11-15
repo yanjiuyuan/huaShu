@@ -47,5 +47,11 @@ namespace DingTalk.Models.DingModels
         /// </summary>
         [StringLength(500)]
         public string FilePath { get; set; }
+
+        /// <summary>
+        /// 销售经理Id
+        /// </summary>
+        [StringLength(200)]
+        public string SalesManagerId { get; set; }
     }
 }
