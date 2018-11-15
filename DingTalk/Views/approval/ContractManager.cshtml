@@ -16,19 +16,27 @@
             <el-form-item label="合同编号" prop="ContractNo">
                 <el-input v-model="ruleForm.ContractNo"></el-input>
             </el-form-item>
-
+            <el-form-item label="合同名称" prop="ContractName">
+                <el-input v-model="ruleForm.ContractName"></el-input>
+            </el-form-item>
             <el-form-item label="合同签订单位" prop="SignUnit">
                 <el-input v-model="ruleForm.SignUnit"></el-input>
             </el-form-item>
 
-            <el-form-item label="销售经理">
-                <el-input v-model="ruleForm.SalesManager"></el-input>
+            <el-form-item label="销售经理" required="required">
+                <span>{{ResponsibleMan[0].name}} &nbsp;</span>
+                <el-button class="button-new-tag" size="small" v-on:click="addMan">+ 选择</el-button>
             </el-form-item>
-
             <el-form-item label="合同类型">
-                <el-input v-model="ruleForm.ContractType"></el-input>
+                <el-select v-model="ruleForm.ContractType" placeholder="请选择" style="width:400px;">
+                    <el-option v-for="item in types"
+                               :key="item"
+                               :label="item"
+                               :value="item">
+                        <span style="float: left">{{ item }}</span>
+                    </el-option>
+                </el-select>
             </el-form-item>
-
             <el-form-item>
                 <el-button type="primary" v-on:click="addProject" :disabled="disablePage">添加</el-button>
                 <el-button type="primary" v-on:click="getData">获取合同列表</el-button>
@@ -40,13 +48,13 @@
         <!--新闻列表表格實體-->
         <el-table :data="data" stripe border>
             <el-table-column prop="ContractNo" label="合同编号"></el-table-column>
+            <el-table-column prop="ContractName" label="合同名称"></el-table-column>
             <el-table-column prop="SignUnit" label="合同签订单位"></el-table-column>
             <el-table-column prop="SalesManager" label="销售经理"></el-table-column>
             <el-table-column prop="ContractType" label="合同类型"></el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
-                    <el-button size="mini" type="danger"
-                               v-on:click="delete(scope.$index, scope.row)">删除</el-button>
+                    <el-button size="mini" type="danger" v-on:click="deleteRow(scope.$index,scope.row)">删除</el-button>
                 </template>
             </el-table-column>
         </el-table>
@@ -73,22 +81,31 @@
         mixins: [mixin],
         data: function () {
             return {
+                ResponsibleMan: [{ name: '', emplId: '' }],
                 ruleForm: {
+                    ApplyManId: DingData.userid,
                     ContractNo: '',
+                    ContractName: '',
                     SignUnit: '',
                     SalesManager: '',
+                    SalesManagerId: '',
                     ContractType: '',
                 },
+                types: ['工业自动化', '数控系统', '散件', '教育', '易货', '售后服务'],
                 data: []
             }
         },
         methods: {
             //添加
             addProject() {
+                console.log('add~~~~~~~~~~~~~~~~')
                 var that = this
+                this.ruleForm.SalesManager = this.ResponsibleMan[0].name
+                this.ruleForm.SalesManagerId = this.ResponsibleMan[0].emplId
+                console.log(this.ruleForm)
                 this.$refs['ruleForm'].validate((valid) => {
                     if (valid) {
-                        that._postData('/ContractManager/Add', function (data) {
+                        that._postData('/ContractManager/Add?ApplyManId=manager325', function (data) {
                             that.$alert('恭喜提交成功', '提示信息', {
                                 confirmButtonText: '确定',
                                 callback: action => {
@@ -104,7 +121,6 @@
             getData() {
                 var that = this
                 var param = {
-                    type: this.ruleForm.Type,
                     pageIndex: this.currentPage,
                     pageSize: this.pageSize
                 }
@@ -114,8 +130,10 @@
                 }, param)
             },
             //删除
-            delete(index,news) {
+            deleteRow(index,row) {
                 var that = this
+                console.log('delete1 ~~~~~')
+                console.log(row)
                 that._getData('/ContractManager/Del', function (result) {
                     if (result.error.errorCode != 0) {
                         that.elementAlert('报错了', result.error.errorMessage)
@@ -123,7 +141,8 @@
                     }
                     that.getData()
                 }, {
-                        id: news.Id
+                        ApplyManId: DingData.userid,
+                        id: row.Id
                     })
             }
         },

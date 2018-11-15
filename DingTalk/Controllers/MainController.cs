@@ -84,7 +84,9 @@ namespace WebZhongZhi.Controllers
         {
             return View();
         }
-        
-
+        public ActionResult Approval_purchaseFinished()
+        {
+            return View();
+        }
     }
 }

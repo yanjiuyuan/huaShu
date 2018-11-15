@@ -128,7 +128,10 @@
                         loadPage('/Main/approval_purchase' + _formatQueryStr(param))
                         return
                     }
-
+                    if (row.FlowId == 26) {
+                        loadPage('/Main/approval_purchaseFinished' + _formatQueryStr(param))
+                        return
+                    }
 
                     if (row.FlowId == 7) {
                         loadPage('/Main/approval_detail2' + _formatQueryStr(param))
