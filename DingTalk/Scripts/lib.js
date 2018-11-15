@@ -52,7 +52,7 @@ function loadPage(url) {
 }
 function goHome() {
     $.ajax({
-        url: '/FlowInfo/GetFlowStateCounts?ApplyManId=' + id,
+        url: '/FlowInfo/GetFlowStateCounts?ApplyManId=' + DingData.userid,
         datatype: 'json',
         success: function (data) {
             if (JSON.parse(data).ApproveCount) {
@@ -406,6 +406,12 @@ var mixin = {
             HandleImplementation: [
                 { required: true, message: '办理落实情况不能为空！', trigger: 'blur' }
             ],
+            ContractNo: [
+                { required: true, message: '合同编号不能为空！', trigger: 'blur' }
+            ],
+            SignUnit: [
+                { required: true, message: '合同签订单位不能为空！', trigger: 'blur' }
+            ],
         },
         pickerOptions: pickerOptions,
         showAddProject: false,
@@ -518,7 +524,7 @@ var mixin = {
                 paramArr[0][p] = param[p]
             }
             for (let node of this.nodeList) {
-                if (that.nodeInfo.IsNeedChose && that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) {
+                if ((that.nodeInfo.IsNeedChose && that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) || (node.NodeName == "采购员采购" && node.AddPeople.length >0)) {
                     if (node.AddPeople.length == 0) {
                         this.$alert('您尚未选择审批人', '提交错误', {
                             confirmButtonText: '确定',
@@ -555,6 +561,9 @@ var mixin = {
                     }
                 }
             }
+            console.log('同意审批了~~~~~~~~~')
+            console.log(this.nodeList)
+            console.log(paramArr)
             $.ajax({
                 url: "/FlowInfo/SubmitTaskInfo",
                 type: "POST",
