@@ -124,7 +124,14 @@ namespace DingTalk.Controllers
             {
                 EFHelper<Contract> eFHelper = new EFHelper<Contract>();
                 System.Linq.Expressions.Expression<Func<Contract, bool>> expression = null;
-                expression = n => n.ContractNo.Contains(keyword) || n.ContractType.Contains(keyword) || n.SalesManager.Contains(keyword) || n.SignUnit.Contains(keyword);
+                if (string.IsNullOrEmpty(keyword))
+                {
+                    expression = n => n.ContractNo.Contains(keyword) || n.ContractType.Contains(keyword) || n.SalesManager.Contains(keyword) || n.SignUnit.Contains(keyword);
+                }
+                else
+                {
+                    expression = n => n.ContractNo != null;
+                }
                 List<Contract> contractListAll = eFHelper.GetListBy(expression);
                 List<Contract> contract = eFHelper.GetPagedList(pageIndex, pageSize,
                      expression, n => n.Id);
