@@ -163,7 +163,7 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("Quary")]
-        public object Quary(string keyword, int pageIndex, int pageSize)
+        public object Quary( int pageIndex, int pageSize, string keyword = "")
         {
             try
             {
