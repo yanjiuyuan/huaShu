@@ -21,6 +21,12 @@
             <el-form-item label="申请部门">
                 <el-input v-model="tableInfo.Dept" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
+            <el-form-item label="项目名称">
+                <el-input v-model="tableInfo.ProjectName" :disabled="true" style="width:80%"></el-input>
+            </el-form-item>
+            <el-form-item label="项目编号">
+                <el-input v-model="tableInfo.ProjectId" :disabled="true" style="width:80%"></el-input>
+            </el-form-item>
             <el-form-item label="备注">
                 <el-input v-model="tableInfo.Remark" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
@@ -34,7 +40,7 @@
             <el-table-column prop="Unit" label="预计单价"></el-table-column>
             <el-table-column label="采购员" v-if="NodeId == 4">
                 <template slot-scope="scope">
-                    <el-select v-model="scope.row.hello" placeholder="请选择">
+                    <el-select v-model="scope.row.PurchaseManId" placeholder="请选择" v-on:change="choosePeople">
                         <el-option v-for="item in options"
                                    :key="item.emplId"
                                    :label="item.name"
@@ -99,7 +105,6 @@
                 ruleForm: {
                     Mark: ''
                 },
-                //purchaseMan: []
 
                 options: [],
                 emplId: ''
@@ -119,26 +124,60 @@
                             }
                         }
                     }
-                    let url = '/OfficeSuppliesPurchase/ModifyTable'
-                    var param = []
-                    for (let d of that.dataList) {
-                        for (let v of d.value) {
-                            param.push(v)
-                        }
-                    }
-                    console.log(JSON.stringify(param))
+                    let url = '/Purchase/ModifyPurchaseTable'
                     that._postData(url, function (data) {
                         that.aggreSubmit({
                             "Id": this.tableInfo.Id,
                             "Remark": this.ruleForm.Mark
                         })
-                    }, param)
+                    }, that.dataList)
                 }
                 else {
                     this.aggreSubmit({
                         "Id": this.tableInfo.Id,
                         "Remark": this.ruleForm.Mark
                     })
+                }
+            },
+            choosePeople(chooseId,row) {
+                console.log('change people~~~~~~~~~')
+                for (let d of this.dataList) {
+                    for (let o of this.options) {
+                        if (d.PurchaseManId == o.emplId) {
+                            d.PurchaseMan = o.name
+                        }
+                    }
+                }
+                this.setChooseMan()
+            },
+            setChooseMan() {
+                var that = this
+                if (NodeId != 4) return
+                var mans = []
+                for (let d of this.dataList) {
+                    mans.push({
+                        name: d.PurchaseMan,
+                        emplId: d.PurchaseManId
+                    })
+                }
+                let hash = {}
+                console.log('set change people before ~~~~~~~~~')
+                console.log(mans)
+                mans = mans.reduce((preVal, curVal) => {
+                    hash[curVal.emplId] ? '' : hash[curVal.emplId] = true && preVal.push(curVal);
+                    return preVal
+                }, [])
+
+                console.log(mans)
+                var nodeId = NodeId + 1
+                for (let node of that.nodeList) {
+                    if (node.NodeId == nodeId) {
+                        $("." + nodeId).remove()
+                        node.AddPeople = mans
+                        for (let d of mans) {
+                            $("#" + nodeId).after('<span class="el-tag ' + nodeId + '" style="width: 60px; text-align: center; ">' + d.name.substring(0, 3) + '</span >')
+                        }
+                    }
                 }
             },
             returnBk() {
@@ -150,21 +189,23 @@
             },
             getBomInfo() {
                 var that = this
-                this._getData("/Purchase/ReadPurchaseTable", function (data) {
-                    that.dataList = []
-                    console.log('获取bom表')
-                    for (let d of data) {
-                        d['hello'] = '戴晓明'
-                    }
-                    console.log(data)
-                    that.dataList = data
-                }, { TaskId: TaskId, PurchaseMan:""})
 
                 this._getData("Role/GetRoleInfo", function (data) {
-                    that.purchaseMan = []
                     console.log('获取采购员信息')
                     console.log(JSON.stringify(data))
                     that.options = data
+
+                    that._getData("/Purchase/ReadPurchaseTable", function (data) {
+                        console.log('获取bom表')
+                        for (let d of data) {
+                            d['PurchaseMan'] = that.options[0].name
+                            d['PurchaseManId'] = that.options[0].emplId
+                        }
+                        console.log(data)
+                        that.dataList = data
+                        that.setChooseMan()
+                    }, { TaskId: TaskId, PurchaseManId: "" })
+
                 }, { RoleName: "采购员" })
             }
         },
@@ -189,7 +230,7 @@
             success: function (data) {
                 console.log("获取审批表单信息ok")
                 console.log(url)
-                console.log()
+                console.log(data)
                 //allData = data
                 demo.tableInfo = data
             },

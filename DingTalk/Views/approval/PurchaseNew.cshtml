@@ -101,16 +101,6 @@
             <el-input v-model="ruleForm.name" :disabled="true"></el-input>
         </el-form-item>
 
-        @*<el-form-item label="项目名称" prop="ProjectName">
-            <el-select v-model="projectList.ProjectId" placeholder="请选择">
-                <el-option v-for="item in projectList"
-                           :key="item.ProjectId"
-                           :label="item.ProjectName"
-                           :value="item.ProjectId">
-                </el-option>
-            </el-select>
-        </el-form-item>*@
-
         <el-form-item label="项目名" prop="ProjectId">
             <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
                 <el-option v-for="item in projectList"
@@ -185,8 +175,14 @@
                         return
                     }
                 }
-
+                
                 var that = this
+                var ProjectName
+                for (let p of that.projectList) {
+                    if (p.ProjectId == that.ruleForm.ProjectId) {
+                        ProjectName = p.ProjectName
+                    }
+                }
                 let url = '/Purchase/SavePurchaseTable'
                 let callBack = function (taskId) {
                     console.log(taskId)
@@ -207,7 +203,9 @@
                 }
                 that.approvalSubmit(formName, {
                     Title: that.ruleForm.Title,
-                    Remark: that.ruleForm.remark
+                    Remark: that.ruleForm.remark,
+                    ProjectName: ProjectName,
+                    ProjectId: that.ruleForm.ProjectId
                 }, callBack)
             },
             //加载重新发起审批传递的数据
