@@ -23,6 +23,12 @@ namespace DingTalk.Models.DingModels
         [StringLength(300)]
         public string ContractNo { get; set; }
         /// <summary>
+        /// 合同名称
+        /// </summary>
+        [StringLength(200)]
+        public string ContractName { get; set; }
+
+        /// <summary>
         /// 合同签订单位
         /// </summary>
         [StringLength(300)]
@@ -59,6 +65,6 @@ namespace DingTalk.Models.DingModels
         /// </summary>
         [NotMapped]
         public string ApplyManId { get; set; }
-        
+
     }
 }
