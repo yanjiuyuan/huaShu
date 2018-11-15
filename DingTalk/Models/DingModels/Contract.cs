@@ -53,5 +53,12 @@ namespace DingTalk.Models.DingModels
         /// </summary>
         [StringLength(200)]
         public string SalesManagerId { get; set; }
+
+        /// <summary>
+        /// ²Ù×÷Ô±Id
+        /// </summary>
+        [NotMapped]
+        public string ApplyManId { get; set; }
+        
     }
 }

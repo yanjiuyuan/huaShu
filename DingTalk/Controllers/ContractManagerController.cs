@@ -21,17 +21,16 @@ namespace DingTalk.Controllers
         /// 新增合同
         /// </summary>
         /// <param name="contract"></param>
-        /// <param name="ApplyManId">用户Id</param>
         /// <returns></returns>
         [HttpPost]
         [Route("Add")]
-        public object Add(Contract contract, string ApplyManId)
+        public object Add(Contract contract)
         {
             try
             {
                 using (DDContext context = new DDContext())
                 {
-                    if (context.Roles.Where(r => r.RoleName == "合同管理员" && r.UserId == ApplyManId).ToList().Count > 0)
+                    if (context.Roles.Where(r => r.RoleName == "合同管理员" && r.UserId == contract.ApplyManId).ToList().Count > 0)
                     {
                         EFHelper<Contract> eFHelper = new EFHelper<Contract>();
                         if (eFHelper.Add(contract) == 1)
@@ -75,17 +74,16 @@ namespace DingTalk.Controllers
         /// 修改合同
         /// </summary>
         /// <param name="contract"></param>
-        /// <param name="ApplyManId">用户Id</param>
         /// <returns></returns>
         [HttpPost]
         [Route("Modify")]
-        public object Modify(Contract contract, string ApplyManId)
+        public object Modify(Contract contract)
         {
             try
             {
                 using (DDContext context = new DDContext())
                 {
-                    if (context.Roles.Where(r => r.RoleName == "合同管理员" && r.UserId == ApplyManId).ToList().Count > 0)
+                    if (context.Roles.Where(r => r.RoleName == "合同管理员" && r.UserId == contract.ApplyManId).ToList().Count > 0)
                     {
                         EFHelper<Contract> eFHelper = new EFHelper<Contract>();
                         eFHelper.Modify(contract);
