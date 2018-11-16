@@ -7,7 +7,7 @@
     <!--标题-->
     <div class="head-fixed" onclick="loadPage('/Main/approval')">
         <i class="el-icon-arrow-left"></i>
-        办公用品申请-{{nodeInfo.NodeName}}
+        成品采购申请-{{nodeInfo.NodeName}}
     </div>
     <!--物料搜索-->
     <div>
@@ -40,7 +40,7 @@
         </el-pagination>
     </div>
     <hr />
-    <h3>已选办公用品</h3>
+    <h3>已选采购物品</h3>
     <!--采购列表表格實體-->
     <el-table :data="purchaseList" stripe border>
         <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
@@ -52,12 +52,12 @@
                 </el-input>
             </template>
         </el-table-column>
-        <el-table-column prop="ExpectPrice" label="预计单价" width="100">
-            <template slot-scope="scope">
-                <el-input v-model="scope.row.ExpectPrice" :disabled="true">
-                </el-input>
-            </template>
-        </el-table-column>
+        @*<el-table-column prop="ExpectPrice" label="预计单价" width="100">
+                <template slot-scope="scope">
+                    <el-input v-model="scope.row.ExpectPrice" :disabled="true">
+                    </el-input>
+                </template>
+            </el-table-column>*@
         <el-table-column prop="Count" label="数量" width="100">
             <template slot-scope="scope">
                 <el-input v-model="scope.row.Count" prop="Count" :class="{ redborder:scope.row.Count ==''}"></el-input>
@@ -91,15 +91,28 @@
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm"
              id="uploadForm" enctype="multipart/form-data">
 
-        <el-form-item label="预计总价">
-            <el-input v-model="totalPrice" :disabled="true"></el-input>
-        </el-form-item>
+        @*<el-form-item label="预计总价">
+                <el-input v-model="totalPrice" :disabled="true"></el-input>
+            </el-form-item>*@
         <el-form-item label="标题" prop="Title">
             <el-input v-model="ruleForm.Title"></el-input>
         </el-form-item>
         <el-form-item label="申请人" prop="name">
             <el-input v-model="ruleForm.name" :disabled="true"></el-input>
         </el-form-item>
+
+        <el-form-item label="合同名" prop="ProjectId">
+            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
+                <el-option v-for="item in projectList"
+                           :key="item.ContractNo"
+                           :label="item.ContractName"
+                           :value="item.ContractNo">
+                    <span style="float: left">{{ item.ContractName }}  -编号: {{item.ContractNo}}</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px"></span>
+                </el-option>
+            </el-select>
+        </el-form-item>
+
         <el-form-item label="备注" prop="remark">
             <el-input v-model="ruleForm.remark"></el-input>
         </el-form-item>
@@ -124,6 +137,7 @@
                 tableData: [],
                 purchaseList: [],
                 projectList: [],
+                value: '',
                 good: {
                     ExpectPrice: '',
                     Unit: '',
@@ -140,7 +154,7 @@
                     name: DingData.nickName,
                     remark: '',
                     ProjectName: '',
-                    Title: '办公用品申请',
+                    Title: '成品采购申请',
                     ProjectId: null,
                     inputProjectName: '',
                     inputProjectId: '',
@@ -152,7 +166,7 @@
         methods: {
             onSubmit(formName) {
                 if (!this.purchaseList.length) {
-                    this.elementAlert('提交失败', '没有选择办公用品')
+                    this.elementAlert('提交失败', '没有选择采购物品')
                     return
                 }
                 for (let p of this.purchaseList) {
@@ -163,7 +177,13 @@
                 }
 
                 var that = this
-                let url = '/OfficeSupplies/SaveTable'
+                var ProjectName
+                for (let p of that.projectList) {
+                    if (p.ContractNo == that.ruleForm.ProjectId) {
+                        ProjectName = p.ContractName
+                    }
+                }
+                let url = '/Purchase/SavePurchaseTable'
                 let callBack = function (taskId) {
                     console.log(taskId)
                     var param = []
@@ -183,7 +203,9 @@
                 }
                 that.approvalSubmit(formName, {
                     Title: that.ruleForm.Title,
-                    Remark: that.ruleForm.remark
+                    Remark: that.ruleForm.remark,
+                    ProjectName: ProjectName,
+                    ProjectId: that.ruleForm.ProjectId
                 }, callBack)
             },
             //加载重新发起审批传递的数据
@@ -199,7 +221,7 @@
                 if (!this.searchForm.name) return
                 //this.$refs[formName].validate((valid) => {
                 //    if (valid) {
-                var url = '/OfficeSupplies/GetICItem?Key=' + that.searchForm.name
+                var url = '/Purchase/GetICItem?Key=' + that.searchForm.name
                 $.ajax({
                     url: url,
                     success: function (data) {
@@ -229,7 +251,8 @@
                     Count: '',
                     Purpose: '',
                     UrgentDate: '',
-                    Mark: ''
+                    Mark: '',
+                    purchaseType: '零部件采购'
                 })
             },
             //删除申请物料
@@ -241,6 +264,18 @@
                 this.dialogFormVisible = true
                 this.good = $.extend({}, good)
                 this.good.index = index
+            },
+            //获取合同数据
+            getContractData() {
+                var that = this
+                var param = {
+                    pageIndex: this.currentPage,
+                    pageSize: 1000
+                }
+                this._getData("/ContractManager/Quary", function (result) {
+                    that.projectList = result.data
+                    that.totalRows = result.count
+                }, param)
             },
             editGood() {
                 this.dialogFormVisible = false
@@ -279,7 +314,7 @@
             //FlowId = 6
             this.loadTempData()
             this.getNodeInfo()
-            this.getProjects()
+            this.getContractData()
             this.getApproInfo()
             this.loadReApprovalData()
             loadHtml("mainPage", "partPage")

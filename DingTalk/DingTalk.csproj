@@ -706,6 +706,7 @@
     <Content Include="Views\approval\PurchaseNew.cshtml" />
     <Content Include="Views\Main\Approval_purchase.cshtml" />
     <Content Include="Views\approval\ContractManager.cshtml" />
+    <Content Include="Views\Main\Approval_purchaseFinished.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -409,6 +409,9 @@ var mixin = {
             ContractNo: [
                 { required: true, message: '合同编号不能为空！', trigger: 'blur' }
             ],
+            ContractName: [
+                { required: true, message: '合同名称不能为空！', trigger: 'blur' }
+            ],
             SignUnit: [
                 { required: true, message: '合同签订单位不能为空！', trigger: 'blur' }
             ],

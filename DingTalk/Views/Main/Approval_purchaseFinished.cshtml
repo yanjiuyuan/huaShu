@@ -6,7 +6,7 @@
 <el-main id="partPage" style="position:relative;">
     <div class="head-fixed" onclick="goHome()">
         <i class="el-icon-arrow-left"></i>
-        零部件采购审批-{{nodeInfo.NodeName}}
+        成品采购审批-{{nodeInfo.NodeName}}
     </div>
     <el-collapse v-model="activeNames">
         @*<el-collapse-item v-for="(d,i) in dataList" :name="i+1" :key="i">*@
@@ -21,10 +21,10 @@
             <el-form-item label="申请部门">
                 <el-input v-model="tableInfo.Dept" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
-            <el-form-item label="项目名称">
+            <el-form-item label="合同名称">
                 <el-input v-model="tableInfo.ProjectName" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
-            <el-form-item label="项目编号">
+            <el-form-item label="合同编号">
                 <el-input v-model="tableInfo.ProjectId" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-form-item label="备注">
