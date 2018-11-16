@@ -430,11 +430,14 @@ namespace DingTalk.Controllers
                                 context.Entry(tasksApplyMan).State = EntityState.Modified;
                                 context.SaveChanges();
 
-
-                                //推送发起人
-                                SentCommonMsg(taskNew.ApplyManId,
-                                string.Format("您发起的审批的流程(流水号:{0})，已审批完成请知晓。", tasks.TaskId),
-                                taskNew.ApplyMan, taskNew.Remark, null);
+                                FlowInfoServer flowInfoServer = new FlowInfoServer();
+                                if (flowInfoServer.GetTasksState(taskNew.TaskId.ToString()) == "已完成")
+                                {
+                                    //推送发起人
+                                    SentCommonMsg(taskNew.ApplyManId,
+                                    string.Format("您发起的审批的流程(流水号:{0})，已审批完成请知晓。", tasks.TaskId),
+                                    taskNew.ApplyMan, taskNew.Remark, null);
+                                }
 
                                 JsonConvert.SerializeObject(new ErrorModel
                                 {

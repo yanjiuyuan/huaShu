@@ -65,6 +65,5 @@ namespace DingTalk.Models.DingModels
         /// </summary>
         [NotMapped]
         public string ApplyManId { get; set; }
-
     }
 }
