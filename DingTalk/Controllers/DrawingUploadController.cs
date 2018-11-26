@@ -140,7 +140,10 @@ namespace DingTalk.Controllers
                             bool IsComPower = (context.ProjectInfo.Where(p => p.ResponsibleManId == ApplyManId && p.FilePath == CheckPath).ToList().Count() >= 1) ? true : false;
                             //判断权限
                             bool IsSuperPower = (context.Roles.Where(r => r.UserId == ApplyManId && r.RoleName == "超级管理员").ToList().Count() >= 1) ? true : false;
-                            if (IsComPower || IsSuperPower)
+                            //判断项目管理员
+                            bool IsProjectManager = (context.Roles.Where(r => r.UserId == ApplyManId && r.RoleName == "项目管理员").ToList().Count() >= 1) ? true : false;
+
+                            if (IsComPower || IsSuperPower || IsProjectManager)
                             {
                                 //保存文件
                                 files.SaveAs(Path);
@@ -460,7 +463,7 @@ namespace DingTalk.Controllers
                     };
 
                     string path = pdfHelper.GeneratePDF(FlowName, TaskId, tasks.ApplyMan, tasks.Dept, tasks.ApplyTime,
-                    ProjectName, ProjectNo, "1", 380, 710, contentList, contentWithList, dtSourse, dtApproveView, null);
+                    null,ProjectName, ProjectNo, "1", 380, 710, contentList, contentWithList, dtSourse, dtApproveView, null);
                     string RelativePath = "~/UploadFile/PDF/" + Path.GetFileName(path);
 
                     string[] Paths = OldPath.Split(',');

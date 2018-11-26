@@ -430,14 +430,11 @@ namespace DingTalk.Controllers
                                 context.Entry(tasksApplyMan).State = EntityState.Modified;
                                 context.SaveChanges();
 
-                                FlowInfoServer flowInfoServer = new FlowInfoServer();
-                                if (flowInfoServer.GetTasksState(taskNew.TaskId.ToString()) == "已完成")
-                                {
-                                    //推送发起人
-                                    SentCommonMsg(taskNew.ApplyManId,
-                                    string.Format("您发起的审批的流程(流水号:{0})，已审批完成请知晓。", tasks.TaskId),
-                                    taskNew.ApplyMan, taskNew.Remark, null);
-                                }
+
+                                //推送发起人
+                                SentCommonMsg(taskNew.ApplyManId,
+                                string.Format("您发起的审批的流程(流水号:{0})，已审批完成请知晓。", tasks.TaskId),
+                                taskNew.ApplyMan, taskNew.Remark, null);
 
                                 JsonConvert.SerializeObject(new ErrorModel
                                 {
@@ -592,6 +589,7 @@ namespace DingTalk.Controllers
                         {
                             //修改流程状态
                             tasks.State = 1;
+                            tasks.IsBacked = true;
                             tasks.ApplyTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                             context.Entry(tasks).State = EntityState.Modified;
                             context.SaveChanges();
@@ -603,17 +601,17 @@ namespace DingTalk.Controllers
                             if (newBackNodeId == "0")  //退回节点为发起人
                             {
                                 Tasks newTask = new Tasks();
-                                newTask = context.Tasks.Where(u => u.TaskId == tasks.TaskId && u.NodeId == 0).First();
-                                newTask.IsBacked = true;
-                                context.Entry<Tasks>(newTask).State = EntityState.Modified;
-                                context.SaveChanges();
-                                newTask.ApplyTime = null;
-                                newTask.State = 0;
-                                newTask.IsBacked = false;
-                                newTask.Remark = null;
-                                newTask.IsPost = true;
-                                context.Tasks.Add(newTask);
-                                context.SaveChanges();
+                                //newTask = context.Tasks.Where(u => u.TaskId == tasks.TaskId && u.NodeId == 0).First();
+                                //newTask.IsBacked = true;
+                                //context.Entry<Tasks>(newTask).State = EntityState.Modified;
+                                //context.SaveChanges();
+                                //newTask.ApplyTime = null;
+                                //newTask.State = 0;
+                                //newTask.IsBacked = false;
+                                //newTask.Remark = null;
+                                //newTask.IsPost = false;
+                                //context.Tasks.Add(newTask);
+                                //context.SaveChanges();
                                 TopSDKTest top = new TopSDKTest();
                                 OATextModel oaTextModel = new OATextModel();
                                 oaTextModel.head = new head

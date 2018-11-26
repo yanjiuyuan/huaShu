@@ -43,6 +43,7 @@ namespace Common.PDF
         /// <param name="ApplyName">申请人</param>
         /// <param name="Dept">申请部门</param>
         /// <param name="ApplyTime">申请时间</param>
+        /// <param name="Name">项目名或合同名</param>
         /// <param name="ProjectName">项目名</param>
         /// <param name="ProjectNo">项目编号</param>
         /// <param name="ImageNo">图片编号</param>
@@ -55,8 +56,8 @@ namespace Common.PDF
         /// <param name="dtSourse">表单数据</param>
         /// <param name="dtApproveView">审批意见数据</param>
         ///  <param name="keyValuePairs">表单单列数据</param>
-        public string GeneratePDF(string FlowName, string TaskId, string ApplyName,string Dept,
-            string ApplyTime, string ProjectName, string ProjectNo, string ImageNo, float ImageX, float ImageY
+        public string GeneratePDF(string FlowName, string TaskId, string ApplyName, string Dept,
+            string ApplyTime, string Name, string ProjectName, string ProjectNo, string ImageNo, float ImageX, float ImageY
             , List<string> contentList, float[] contentWithList
             , DataTable dtSourse, DataTable dtApproveView, Dictionary<string, string> keyValuePairs)
         {
@@ -71,12 +72,11 @@ namespace Common.PDF
                 doc.Open();
 
                 iTextSharp.text.Image imageLogo = iTextSharp.text.Image.GetInstance(
-                    string.Format(@"{0}\Content\images\单位LOGO.jpg", AppDomain.CurrentDomain.BaseDirectory));
-                //imageLogo.Width = 100;
+                    string.Format(@"{0}\Content\images\华数LogoNew.png", AppDomain.CurrentDomain.BaseDirectory));         
                 imageLogo.SetAbsolutePosition(85, 780);
                 writer.DirectContent.AddImage(imageLogo);
 
-                AddHeaderTitleContent("泉州华中科技大学智能制造研究院", fontSmallest, 80);
+                AddHeaderTitleContent("泉州华数机器人有限公司", fontSmallest, 130);
                 CreateEmptyRow(1);//生成一行空行
                 CreateLine();//生成一条下横线
                 //CreateEmptyRow(1);//生成一行空行
@@ -85,8 +85,8 @@ namespace Common.PDF
                 //CreateEmptyRow(1);//生成一行空行
 
                 if (!string.IsNullOrEmpty(TaskId)) { AddPartnerContents("流水号", TaskId, "申请人", ApplyName); }
-                if (!string.IsNullOrEmpty(TaskId)) { AddPartnerContents( "申请时间", ApplyTime.Substring(0, 10),"申请部门", Dept); }               
-                if (!string.IsNullOrEmpty(ProjectName)) { AddSinglePartnerContents("项目", ProjectNo + "-" + ProjectName); }
+                if (!string.IsNullOrEmpty(TaskId)) { AddPartnerContents("申请时间", ApplyTime.Substring(0, 10), "申请部门", Dept); }
+                if (!string.IsNullOrEmpty(ProjectName)) { AddSinglePartnerContents(Name, ProjectNo + "-" + ProjectName); }
                 AddPageNumberContent();//添加页码
                 CreateEmptyRow(1);//生成一行空行
 
@@ -360,10 +360,10 @@ namespace Common.PDF
             content.IndentationLeft = IndentationLeft;
             Chunk chunkNameOne = new Chunk(FieldNameOne + ":", fontSmallNoBold);
             //Chunk chunkTextOne = new Chunk(GetEmptyString(20, FieldValueOne), fontSmallNoBold);
-            Chunk chunkTextOne = new Chunk(FieldValueOne, fontSmallNoBold);
+            Chunk chunkTextOne = new Chunk(FieldValueOne+"     ", fontSmallNoBold);
             Chunk chunkNameTwo = new Chunk(FieldNameTwo + ":", fontSmallNoBold);
             //Chunk chunkTextTwo = new Chunk(GetEmptyString(20, FieldValueTwo), fontSmallNoBold);
-            Chunk chunkTextTwo = new Chunk(FieldValueTwo, fontSmallNoBold);
+            Chunk chunkTextTwo = new Chunk(FieldValueTwo+"     ", fontSmallNoBold);
             content.Add(0, chunkNameOne);
             content.Add(1, chunkTextOne);
             content.Add(0, chunkNameTwo);

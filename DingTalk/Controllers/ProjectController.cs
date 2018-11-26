@@ -169,7 +169,8 @@ namespace DingTalk.Controllers
             );
             //DownloadFile(string.Format("{0}.pdf", DateTime.Now.ToString("yyyyMMdd hh:mm:ss")), string.Format(@"{0}\UploadFile\PDF\321.PDF", AppDomain.CurrentDomain.BaseDirectory));
         }
-        
+
+
         /// <summary>
         /// 文件下载
         /// </summary>
@@ -512,6 +513,8 @@ namespace DingTalk.Controllers
             }
         }
 
+
+
         /// <summary>
         /// 文件下载接口(盯盘推送文件)
         /// </summary>
@@ -754,7 +757,7 @@ namespace DingTalk.Controllers
     public class FileBase64
     {
         public string FileName { get; set; }
- 
+
         public string FilePath { get; set; }
     }
 }
