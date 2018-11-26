@@ -185,7 +185,7 @@
                         }
                     }
                     let url = '/ItemCodeAdd/TableModify'
-                    var param = _cloneArr(this.tableData)
+                    var param = _cloneArr(this.data)
                     console.log(param)
                     this._postData(url, function () {
                         let url2 = '/ItemCodeAdd/InsertPurcahse'
@@ -289,23 +289,7 @@
                 this.dialogVisible = true;
             },
 
-            //獲取角色信息
-            showStamp(roleName) {
-                var that = this
-                var url = "/Role/GetRoleInfo?RoleName=" + roleName
-                $.ajax({
-                    url: url,
-                    success: function (data) {
-                        console.log("獲取角色信息")
-                        console.log(url)
-                        console.log(data)
-                        if (data[0].emplId == DingData.userid && Index == "3") {
-                            that.ifShowStamppBtn = true
-                            if (FlowId == '8') that.ifShowStamppBtn2 = true
-                        }
-                    }
-                })
-            },
+
 
 
         },
