@@ -52,6 +52,8 @@
                         url: '/FlowInfo/GetFlowStateCounts?ApplyManId=' + id,
                         datatype: 'json',
                         success: function (data) {
+                            console.log('菜单数据加载~~~~~~~~~~~')
+                            console.log(JSON.parse(data))
                             that.menuStatus = JSON.parse(data)
                         }
                     })

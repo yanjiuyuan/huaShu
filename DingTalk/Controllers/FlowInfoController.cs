@@ -1428,7 +1428,8 @@ namespace DingTalk.Controllers
                                         ApplyMan = tt == null ? n.NodePeople : tt.ApplyMan,
                                         ApplyTime = tt == null ? "" : tt.ApplyTime,
                                         Remark = tt == null ? "" : tt.Remark,
-                                        IsSend = tt == null ? n.IsSend : tt.IsSend
+                                        IsSend = tt == null ? n.IsSend : tt.IsSend,
+                                        ApplyManId = tt==null?"":tt.ApplyManId
                                     };
                         Quary = Quary.OrderBy(q => q.NodeId).ThenByDescending(h => h.ApplyTime);
                         return JsonConvert.SerializeObject(Quary);

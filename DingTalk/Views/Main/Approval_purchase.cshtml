@@ -30,14 +30,15 @@
             <el-form-item label="备注">
                 <el-input v-model="tableInfo.Remark" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
-
+            <el-button type="primary" v-on:click="stampAndGet">盖章并获取</el-button>
         </el-form>
 
         <el-table :data="dataList" border style="width: 100%;margin-bottom:30px">
             <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
             <el-table-column prop="Name" label="物料名称"></el-table-column>
             <el-table-column prop="Standard" label="规格型号"></el-table-column>
-            <el-table-column prop="Unit" label="预计单价"></el-table-column>
+            <el-table-column prop="Unit" label="单位"></el-table-column>
+            <el-table-column prop="Count" label="数量"></el-table-column>
             <el-table-column label="采购员" v-if="NodeId == 4">
                 <template slot-scope="scope">
                     <el-select v-model="scope.row.PurchaseManId" placeholder="请选择" v-on:change="choosePeople">
@@ -70,6 +71,11 @@
             <el-form-item>
                 <el-button type="primary" v-on:click="onSubmit" :disabled="disablePage">同意</el-button>
                 <el-button v-if="nodeInfo.IsBack" type="warning" v-on:click="returnBk" :disabled="disablePage">退回</el-button>
+            </el-form-item>
+        </template>
+        <template v-if="index==2 && state=='已撤回'">
+            <el-form-item>
+                <el-button type="primary" v-on:click="reApproval" :disabled="disablePage">重新发起</el-button>
             </el-form-item>
         </template>
         <template v-if="index==2 && state=='未完成'">
@@ -105,7 +111,6 @@
                 ruleForm: {
                     Mark: ''
                 },
-
                 options: [],
                 emplId: ''
             }
@@ -184,7 +189,13 @@
                 var param = {
                     TaskId: TaskId
                 }
-                if (NodeId == 5) param.PurchaseManId = DingData.userid
+                var ifTrue = false
+                for (let node of this.nodeList) {
+                    if (node.NodeId == 5 && node.ApplyManId == DingData.userid) {
+                        ifTrue = true
+                    }
+                }
+                if (ifTrue) param.PurchaseManId = DingData.userid
                 this._getData("Role/GetRoleInfo", function (data) {
                     console.log('获取采购员信息')
                     console.log(JSON.stringify(data))
@@ -203,7 +214,24 @@
                     }, param)
 
                 }, { RoleName: "采购员" })
-            }
+            },
+            stampAndGet() {
+                var paramObj = {
+                    UserId: DingData.userid,
+                    TaskId: TaskId
+                }
+                var that = this
+                this._postData("/Purchase/PrintAndSend", function (data) {
+                    var alertStr = ''
+                    data.errorMessage ? alertStr = data.errorMessage : alertStr = data.errmsg
+                    that.$alert(alertStr, '消息', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+
+                        }
+                    });
+                }, paramObj)
+            },
         },
         created: function () {
             this.getNodeInfo()
