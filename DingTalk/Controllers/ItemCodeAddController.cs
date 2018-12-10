@@ -192,5 +192,47 @@ namespace DingTalk.Controllers
             }
         }
 
+
+        /// <summary>
+        /// 更新单条数据
+        /// </summary>
+        /// <param name="TaskId"></param>
+        /// <returns></returns>
+        [Route("UpdateOffice")]
+        [HttpGet]
+        public object UpdateOffice(string TaskId)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    List<Code> codes = context.Code.Where(c => c.TaskId == TaskId).ToList();
+
+                    foreach (var code in codes)
+                    {
+                        context.KisOffice.Add(new KisOffice
+                        {
+                            FNumber = code.CodeNumber,
+                            FName = code.Name,
+                            FNote = code.FNote,
+                            FModel = code.Standard
+                        });
+                        context.SaveChanges();
+                    }
+                }
+                return new NewErrorModel()
+                {
+                    error = new Error(0, "更新成功！", "") { },
+                };
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(1, ex.Message, "") { },
+                };
+            }
+        }
+
     }
 }

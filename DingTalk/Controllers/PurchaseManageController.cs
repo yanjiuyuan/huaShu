@@ -348,7 +348,19 @@ namespace DingTalk.Controllers
                     }
 
 
-                    List<Roles> rolesList = context.Roles.Where(r => r.RoleName.Contains("物料采购员")).ToList();
+                    List<Roles> roles = context.Roles.Where(r => r.RoleName.Contains("物料采购员")).ToList();
+                    List<Tasks> tasks = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId == 5).ToList();
+                    List<Roles> rolesList = new List<Roles>();
+                    foreach (var task in tasks)
+                    {
+                        foreach (var role in roles)
+                        {
+                            if (task.ApplyManId == role.UserId)
+                            {
+                                rolesList.Add(role);
+                            }
+                        }
+                    }
                     foreach (var item in rolesList)
                     {
                         await PrintPDF(context, item.UserId, TaskId, UserId);
@@ -490,6 +502,7 @@ namespace DingTalk.Controllers
         /// <param name="UserId">用户Id</param>
         /// <returns></returns>
         [HttpGet]
+        [Route("PrintExcel")]
         public async Task<object> PrintExcel(string taskId, string UserId)
         {
             try
@@ -535,5 +548,7 @@ namespace DingTalk.Controllers
                 };
             }
         }
+
+        
     }
 }
