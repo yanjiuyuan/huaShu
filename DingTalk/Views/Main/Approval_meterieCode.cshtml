@@ -22,7 +22,7 @@
         </el-table-column>
         <el-table-column prop="Price" label="预计价格" width="100" v-if="NodeId > '0'">
             <template slot-scope="scope">
-                <el-input v-if="Index == '0' && NodeId == 2" v-model="scope.row.FNote" ></el-input>
+                <el-input v-if="Index == '0' && NodeId == 2" v-model="scope.row.FNote"></el-input>
                 <span v-else>{{scope.row.FNote}}</span>
             </template>
         </el-table-column>
@@ -30,12 +30,12 @@
     <!--底部翻頁-->
     <div style="text-align:right">
         <el-pagination v-on:size-change="handleSizeChange"
-                        v-on:current-change="handleCurrentChange"
-                        :current-page="currentPage"
-                        :page-sizes="[1, 3, 5, 10]"
-                        :page-size="5"
-                        layout="total, sizes, prev, pager, next, jumper"
-                        :total="totalRows">
+                       v-on:current-change="handleCurrentChange"
+                       :current-page="currentPage"
+                       :page-sizes="[1, 3, 5, 10]"
+                       :page-size="5"
+                       layout="total, sizes, prev, pager, next, jumper"
+                       :total="totalRows">
         </el-pagination>
     </div>
 
@@ -89,10 +89,9 @@
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" v-on:click="onSubmit" :disabled="disablePage">同意</el-button>
-                <el-button v-if="nodeInfo.IsBack" type="warning" v-on:click="returnSubmit" :disabled="disablePage">退回</el-button>
+                <el-button v-if="nodeInfo.IsBack" type="warning" v-on:click="reSubmit" :disabled="disablePage">退回</el-button>
             </el-form-item>
         </template>
-
         <template v-if="index==2 &&( state=='被退回' || state=='已撤回')">
             <el-form-item>
                 <el-button type="primary" v-on:click="reApproval" :disabled="disablePage">重新发起</el-button>
@@ -192,7 +191,7 @@
                         let url2 = '/ItemCodeAdd/InsertPurcahse'
                         if (that.codeType == '2') url2 = '/ItemCodeAdd/InsertOffice'
                         let paramArr = []
-                        for (let t of that.tableData) {
+                        for (let t of that.data) {
                             paramArr.push({
                                 "FNumber": t.CodeNumber,
                                 "FName": t.Name,
@@ -207,8 +206,8 @@
                                 "Remark": that.ruleForm.mark
                             })
                         }, paramArr
-                           )
-                        
+                        )
+
 
                     }, param)
                 }
@@ -218,15 +217,15 @@
                         "Remark": that.ruleForm.mark
                     })
                 }
-                
+
             },
             //退回审批
-            returnSubmit() {
+            reSubmit() {
                 this.disablePage = true
                 var that = this
                 var param = {
                     "Id": allData.Id,
-                    "Remark": this.ruleForm.mark
+                    "Remark": that.ruleForm.mark
                 }
                 this.returnSubmit(param)
             },
@@ -290,7 +289,23 @@
                 this.dialogVisible = true;
             },
 
-
+            //獲取角色信息
+            showStamp(roleName) {
+                var that = this
+                var url = "/Role/GetRoleInfo?RoleName=" + roleName
+                $.ajax({
+                    url: url,
+                    success: function (data) {
+                        console.log("獲取角色信息")
+                        console.log(url)
+                        console.log(data)
+                        if (data[0].emplId == DingData.userid && Index == "3") {
+                            that.ifShowStamppBtn = true
+                            if (FlowId == '8') that.ifShowStamppBtn2 = true
+                        }
+                    }
+                })
+            },
 
 
         },
@@ -351,8 +366,3 @@
     }
 
 </script>
-
-
-
-
-

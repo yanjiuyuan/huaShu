@@ -31,6 +31,7 @@
                 <el-input v-model="tableInfo.Remark" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-button type="primary" v-on:click="stampAndGet">盖章并获取</el-button>
+            <el-button type="primary" v-on:click="printExcel">打印EXCEL</el-button>
         </el-form>
 
         <el-table :data="dataList" border style="width: 100%;margin-bottom:30px">
@@ -232,6 +233,23 @@
                     });
                 }, paramObj)
             },
+            printExcel() {
+                var paramObj = {
+                    UserId: DingData.userid,
+                    TaskId: TaskId
+                }
+                var that = this
+                this._postData("/Purchase/PrintExcel", function (data) {
+                    var alertStr = ''
+                    data.errorMessage ? alertStr = data.errorMessage : alertStr = data.errmsg
+                    that.$alert(alertStr, '消息', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+
+                        }
+                    });
+                }, paramObj)
+            }
         },
         created: function () {
             this.getNodeInfo()
