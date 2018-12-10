@@ -133,6 +133,7 @@ namespace DingTalk.Controllers
                     //context.BulkSaveChanges();
                     foreach (var kis in kisPurchases)
                     {
+
                         context.KisPurchase.Add(kis);
                         context.SaveChanges();
                     }
