@@ -537,7 +537,6 @@ namespace DingTalk.Controllers
                             error = new Error(1, "文件有误", "") { },
                         };
                     }
-
                 }
             }
             catch (Exception ex)
@@ -548,7 +547,5 @@ namespace DingTalk.Controllers
                 };
             }
         }
-
-        
     }
 }
