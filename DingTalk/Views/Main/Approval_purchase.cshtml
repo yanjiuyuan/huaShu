@@ -215,40 +215,6 @@
                     }, param)
 
                 }, { RoleName: "采购员" })
-            },
-            stampAndGet() {
-                var paramObj = {
-                    UserId: DingData.userid,
-                    TaskId: TaskId
-                }
-                var that = this
-                this._postData("/Purchase/PrintAndSend", function (data) {
-                    var alertStr = ''
-                    data.errorMessage ? alertStr = data.errorMessage : alertStr = data.errmsg
-                    that.$alert(alertStr, '消息', {
-                        confirmButtonText: '确定',
-                        callback: action => {
-
-                        }
-                    });
-                }, paramObj)
-            },
-            printExcel() {
-                var paramObj = {
-                    UserId: DingData.userid,
-                    TaskId: TaskId
-                }
-                var that = this
-                this._postData("/Purchase/PrintExcel", function (data) {
-                    var alertStr = ''
-                    data.errorMessage ? alertStr = data.errorMessage : alertStr = data.errmsg
-                    that.$alert(alertStr, '消息', {
-                        confirmButtonText: '确定',
-                        callback: action => {
-
-                        }
-                    });
-                }, paramObj)
             }
         },
         created: function () {
