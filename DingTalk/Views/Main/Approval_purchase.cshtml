@@ -137,7 +137,7 @@
                     })
                 }
             },
-            choosePeople(chooseId,row) {
+            choosePeople(chooseId, row) {
                 console.log('change people~~~~~~~~~')
                 for (let d of this.dataList) {
                     for (let o of this.options) {
@@ -167,7 +167,7 @@
                 }, [])
 
                 console.log(mans)
-                var nodeId = NodeId + 1
+                var nodeId = NodeId + 2
                 for (let node of that.nodeList) {
                     if (node.NodeId == nodeId) {
                         $("." + nodeId).remove()
@@ -200,20 +200,33 @@
                 this._getData("Role/GetRoleInfo", function (data) {
                     console.log('获取采购员信息')
                     console.log(JSON.stringify(data))
+
                     that.options = data
+
+
+                    //for (let o of options) {
+                    //    if (o.name == '') {
+                    //        that.options[0].selected = true;
+                    //    }
+                    //}
+
+                   
 
                     that._getData("/Purchase/ReadPurchaseTable", function (data) {
                         console.log('获取bom表')
                         for (let d of data) {
-                            d['PurchaseMan'] = that.options[0].name
-                            d['PurchaseManId'] = that.options[0].emplId
+                            for (let o of that.options) {
+                                if (o.name == '巫仕座') {
+                                    d['PurchaseMan'] = o.name
+                                    d['PurchaseManId'] = o.emplId
+                                }
+                            }
                         }
                         console.log(param)
                         console.log(data)
                         that.dataList = data
                         that.setChooseMan()
                     }, param)
-
                 }, { RoleName: "采购员" })
             },
             stampAndGet() {
