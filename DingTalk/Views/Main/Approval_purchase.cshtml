@@ -30,8 +30,8 @@
             <el-form-item label="备注">
                 <el-input v-model="tableInfo.Remark" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
-            <el-button type="primary" v-on:click="stampAndGet">盖章并获取</el-button>
-            <el-button type="primary" v-on:click="printExcel">打印EXCEL</el-button>
+            <el-button type="primary" v-on:click="StampAndGet">盖章并获取</el-button>
+            <el-button type="primary" v-on:click="PrintExcel">打印EXCEL</el-button>
         </el-form>
 
         <el-table :data="dataList" border style="width: 100%;margin-bottom:30px">
@@ -82,6 +82,7 @@
         <template v-if="index==2 && state=='未完成'">
             <el-form-item>
                 <ding :dinglist="dingList"></ding>
+                <el-button type="warning" v-on:click="rebackSubmit" :disabled="disablePage">撤回</el-button>
             </el-form-item>
         </template>
     </el-form>
@@ -89,10 +90,12 @@
 
 <script>
     var allData = {}
+    var state = ''
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
         NodeId = UrlObj.nodeid
         TaskId = UrlObj.taskid
+        state = UrlObj.state
         Id = UrlObj.id
         var Index = UrlObj.index
     }
@@ -109,6 +112,7 @@
                 nodeInfo: {},
                 tableInfo: {},
                 codesInfo: {},
+                state: state,
                 ruleForm: {
                     Mark: ''
                 },
@@ -178,12 +182,29 @@
                     }
                 }
             },
+            //退回审批
             returnBk() {
                 let param = {
                     "Id": allData.Id,
                     "Remark": this.ruleForm.Mark
                 }
                 this.returnSubmit(param)
+            },
+            //撤回审批
+            rebackSubmit() {
+                this.disablePage = true
+                var param = {
+                    "Id": allData.Id,
+                    "NodeId": 0,
+                    "Remark": this.ruleForm.mark
+                }
+                this.returnSubmit(param)
+            },
+            StampAndGet() {
+                this.stampAndGet()
+            },
+            PrintExcel() {
+                this.printExcel()
             },
             getBomInfo() {
                 var that = this
@@ -231,6 +252,7 @@
             }
         },
         created: function () {
+            this.GetDingList(TaskId)
             this.getNodeInfo()
             this.getApproInfo()
             this.getBomInfo()
