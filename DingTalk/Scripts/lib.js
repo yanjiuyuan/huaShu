@@ -663,6 +663,40 @@ var mixin = {
                 }
             }
         },
+        //打印文件方法
+        stampAndGet() {
+            var paramObj = {
+                UserId: DingData.userid,
+                TaskId: TaskId
+            }
+            var that = this
+            this._postData("/Purchase/PrintAndSend", function (data) {
+                var alertStr = ''
+                data.error.errorMessage ? azlertStr = data.error.errorMessage : alertStr = '请求出错，请联系管理员'
+                that.$alert(alertStr, '消息', {
+                    confirmButtonText: '确定',
+                    callback: action => {
+                    }
+                });
+            }, paramObj)
+        },
+        printExcel() {
+            var paramObj = {
+                UserId: DingData.userid,
+                TaskId: TaskId
+            }
+            var that = this
+            this._postData("/Purchase/PrintExcel", function (data) {
+                var alertStr = ''
+                data.error.errorMessage ? azlertStr = data.error.errorMessage : alertStr = '请求出错，请联系管理员'
+                that.$alert(alertStr, '消息', {
+                    confirmButtonText: '确定',
+                    callback: action => {
+
+                    }
+                });
+            }, paramObj)
+        },
         //翻頁相關事件
         getData() {
             var start = this.pageSize * (this.currentPage - 1)
