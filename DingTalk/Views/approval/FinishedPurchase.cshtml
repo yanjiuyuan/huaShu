@@ -52,12 +52,12 @@
                 </el-input>
             </template>
         </el-table-column>
-        @*<el-table-column prop="ExpectPrice" label="预计单价" width="100">
-                <template slot-scope="scope">
-                    <el-input v-model="scope.row.ExpectPrice" :disabled="true">
-                    </el-input>
-                </template>
-            </el-table-column>*@
+        <el-table-column prop="Price" label="预计单价" width="100">
+            <template slot-scope="scope">
+                <el-input v-model="scope.row.Price" :disabled="false">
+                </el-input>
+            </template>
+        </el-table-column>
         <el-table-column prop="Count" label="数量" width="100">
             <template slot-scope="scope">
                 <el-input v-model="scope.row.Count" prop="Count" :class="{ redborder:scope.row.Count ==''}"></el-input>
@@ -68,13 +68,26 @@
                 <el-input v-model="scope.row.Purpose"></el-input>
             </template>
         </el-table-column>
-        @*<el-table-column prop="UrgentDate" label="需用日期" width="140">
-                <template slot-scope="scope">
-                    <el-date-picker v-model="scope.row.UrgentDate" :class="{ redborder:scope.row.UrgentDate ==''}" class="repadding"
-                                    type="date" prefix-icon="el-icon-minus" clear-icon="el-icon-minus">
-                    </el-date-picker>
-                </template>
-            </el-table-column>*@
+        <el-table-column prop="UrgentDate" label="需用日期" width="140">
+            <template slot-scope="scope">
+                <el-date-picker v-model="scope.row.UrgentDate" :class="{ redborder:scope.row.UrgentDate ==''}" class="repadding"
+                                type="date" prefix-icon="el-icon-minus" clear-icon="el-icon-minus">
+                </el-date-picker>
+            </template>
+
+        </el-table-column>
+        <el-table-column label="送货地点">
+            <template slot-scope="scope">
+                <el-select v-model="scope.row.SendPosition">
+                    <el-option v-for="item in SendPosition"
+                               :key="item.name"
+                               :label="item.name"
+                               :value="item.name">
+                    </el-option>
+                </el-select>
+            </template>
+        </el-table-column>
+
         <el-table-column prop="Mark" label="备注">
             <template slot-scope="scope">
                 <el-input v-model="scope.row.Mark"></el-input>
@@ -92,14 +105,26 @@
              id="uploadForm" enctype="multipart/form-data">
 
         @*<el-form-item label="预计总价">
-                <el-input v-model="totalPrice" :disabled="true"></el-input>
-            </el-form-item>*@
+            <el-input v-model="totalPrice" :disabled="true"></el-input>
+        </el-form-item>*@
         <el-form-item label="标题" prop="Title">
             <el-input v-model="ruleForm.Title"></el-input>
         </el-form-item>
         <el-form-item label="申请人" prop="name">
             <el-input v-model="ruleForm.name" :disabled="true"></el-input>
         </el-form-item>
+
+        @*<el-form-item label="项目名" prop="ProjectId">
+            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
+                <el-option v-for="item in projectList"
+                           :key="item.ProjectId"
+                           :label="item.ProjectName"
+                           :value="item.ProjectId">
+                    <span style="float: left">{{ item.ProjectName }}  -编号: {{item.ProjectId}}</span>
+                    <span style="float: right; color: #8492a6; font-size: 13px"></span>
+                </el-option>
+            </el-select>
+        </el-form-item>*@
 
         <el-form-item label="合同名" prop="ProjectId">
             <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
@@ -112,6 +137,9 @@
                 </el-option>
             </el-select>
         </el-form-item>
+
+
+
 
         <el-form-item label="备注" prop="remark">
             <el-input v-model="ruleForm.remark"></el-input>
@@ -139,7 +167,7 @@
                 projectList: [],
                 value: '',
                 good: {
-                    ExpectPrice: '',
+                    Price: '',
                     Unit: '',
                     Count: ''
                 },
@@ -160,7 +188,8 @@
                     inputProjectId: '',
                     Time: ''
                 },
-                preApprover: false
+                preApprover: false,
+                SendPosition: [{ name: "研究院" }, { name: "基地" }]
             }
         },
         methods: {
@@ -176,7 +205,7 @@
                     }
                 }
 
-                var that = this
+                 var that = this
                 var ProjectName
                 for (let p of that.projectList) {
                     if (p.ContractNo == that.ruleForm.ProjectId) {
@@ -192,6 +221,7 @@
                         param.push(p)
                     }
                     console.log(JSON.stringify(param))
+
                     that._postData(url, function (data) {
                         that.$alert('恭喜提交成功', '提示信息', {
                             confirmButtonText: '确定',
@@ -247,12 +277,13 @@
                     Name: good.FName,
                     Standard: good.FModel,
                     Unit: '',
-                    ExpectPrice: good.FNote,// == '0' ? '' : good.FNote,
+                    Price: good.FNote,// == '0' ? '' : good.FNote,
                     Count: '',
                     Purpose: '',
                     UrgentDate: '',
                     Mark: '',
-                    purchaseType: '零部件采购'
+                    SendPosition: this.SendPosition[0].name,
+                    purchaseType: '成品采购'
                 })
             },
             //删除申请物料
@@ -265,6 +296,18 @@
                 this.good = $.extend({}, good)
                 this.good.index = index
             },
+            editGood() {
+                this.dialogFormVisible = false
+                let tmpGood = $.extend({}, this.good)
+                if (tmpGood.UrgentDate) tmpGood.UrgentDate = _dateToString(tmpGood.UrgentDate)
+                this.purchaseList[this.good.index] = tmpGood
+                let tmpArr = _cloneArr(this.purchaseList)
+                this.purchaseList = tmpArr
+                console.log('done eidt')
+                console.log(this.good.index)
+                console.log(this.purchaseList)
+            },
+
             //获取合同数据
             getContractData() {
                 var that = this
@@ -277,17 +320,7 @@
                     that.totalRows = result.count
                 }, param)
             },
-            editGood() {
-                this.dialogFormVisible = false
-                let tmpGood = $.extend({}, this.good)
-                if (tmpGood.UrgentDate) tmpGood.UrgentDate = _dateToString(tmpGood.UrgentDate)
-                this.purchaseList[this.good.index] = tmpGood
-                let tmpArr = _cloneArr(this.purchaseList)
-                this.purchaseList = tmpArr
-                console.log('done eidt')
-                console.log(this.good.index)
-                console.log(this.purchaseList)
-            },
+
             //显示临时保存数据
             saveTempData() {
                 setLocalObj('officeSupplies', this.purchaseList)
@@ -305,7 +338,7 @@
             totalPrice: function () {
                 var totalPrice = 0
                 for (let p of this.purchaseList) {
-                    totalPrice = totalPrice + p.ExpectPrice * p.Count
+                    totalPrice = totalPrice + p.Price * p.Count
                 }
                 return totalPrice
             }
@@ -318,7 +351,6 @@
             this.getApproInfo()
             this.loadReApprovalData()
             loadHtml("mainPage", "partPage")
-
         }
     })
 

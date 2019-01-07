@@ -349,7 +349,7 @@ namespace DingTalk.Controllers
 
 
                     List<Roles> roles = context.Roles.Where(r => r.RoleName.Contains("物料采购员")).ToList();
-                    List<Tasks> tasks = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId == 5).ToList();
+                    List<Tasks> tasks = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId==7).ToList();
                     List<Roles> rolesList = new List<Roles>();
                     foreach (var task in tasks)
                     {
@@ -413,11 +413,11 @@ namespace DingTalk.Controllers
                 {
                     if (nodeInfo.NodePeople.Length > 3)
                     {
-                        nodeInfo.NodePeople = nodeInfo.NodePeople.Substring(0, 2);
+                        nodeInfo.NodePeople = nodeInfo.NodePeople.Substring(0,3);
                     }
                 }
 
-                if (nodeInfo.NodeId.ToString() == "5")
+                if (nodeInfo.NodeName.ToString() == "采购员采购")
                 {
                     nodeInfo.NodePeople = "";
                 }
@@ -425,7 +425,7 @@ namespace DingTalk.Controllers
                 {
                     string strNodePeople = "";
                     string ApplyTime = "";
-                    if (nodeInfo.NodeId.ToString() == "5")
+                    if (nodeInfo.NodeName.ToString() == "采购员采购")
                     {
                         strNodePeople = context.Tasks.Where(q => q.TaskId.ToString() == TaskId && q.NodeId == nodeInfo.NodeId && q.ApplyManId == ApplyManId).First().ApplyMan;
                         ApplyTime = context.Tasks.Where(q => q.TaskId.ToString() == TaskId && q.NodeId == nodeInfo.NodeId && q.ApplyManId == ApplyManId).First().ApplyTime;
@@ -446,9 +446,22 @@ namespace DingTalk.Controllers
             DataTable dtApproveView = ClassChangeHelper.ToDataTable(NodeInfoList);
             NodeInfoList.Clear();
             string FlowName = context.Flows.Where(f => f.FlowId.ToString() == FlowId).First().FlowName.ToString();
-            ProjectInfo projectInfo = context.ProjectInfo.Where(p => p.ProjectId == ProjectId).First();
-            string ProjectName = projectInfo.ProjectName;
-            string ProjectNo = projectInfo.ProjectId;
+            string ProjectName = "";
+            string ProjectNo = "";
+            if (FlowId == "24") //零部件
+            {
+                ProjectInfo projectInfo = context.ProjectInfo.Where(p => p.ProjectId == ProjectId).First();
+                ProjectName = projectInfo.ProjectName;
+                ProjectNo = projectInfo.ProjectId;
+            }
+            else
+            {
+                Contract contract = context.Contract.Where(p=>p.ContractNo== ProjectId).First();
+                ProjectName = contract.ContractName;
+                ProjectNo = contract.ContractNo;
+            }
+        
+          
 
             //绘制BOM表单PDF
             List<string> contentList = new List<string>()
@@ -510,7 +523,17 @@ namespace DingTalk.Controllers
                 using (DDContext context = new DDContext())
                 {
                     List<PurchaseTable> purchaseTables = context.PurchaseTable.Where(p => p.TaskId == taskId).ToList();
-                    DataTable dtpurchaseTables = ClassChangeHelper.ToDataTable(purchaseTables);
+                    //DataTable dtpurchaseTables = ClassChangeHelper.ToDataTable(purchaseTables);
+                    var SelectPurchaseList = from p in purchaseTables
+                                             select new
+                                             {
+                                                 p.Id,p.TaskId,p.CodeNo,
+                                                 p.Name,Type=p.Standard,p.Unit,
+                                                 p.Count,p.Price,p.Purpose,p.UrgentDate,p.Mark,p.SendPosition,
+                                                 p.PurchaseMan,p.purchaseType
+                                             };
+                    DataTable dtpurchaseTables = DtLinqOperators.CopyToDataTable(SelectPurchaseList);
+
 
                     string path = HttpContext.Current.Server.MapPath("~/UploadFile/Excel/Templet/采购导出模板.xlsx");
                     string time = DateTime.Now.ToString("yyyyMMddHHmmss");
@@ -527,7 +550,7 @@ namespace DingTalk.Controllers
                         var result = await dingTalkServersController.SendFileMessage(fileSendModel);
                         return new NewErrorModel()
                         {
-                            error = new Error(0, result, "") { },
+                            error = new Error(0, result, "Excel已推送至您的钉钉") { },
                         };
                     }
                     else

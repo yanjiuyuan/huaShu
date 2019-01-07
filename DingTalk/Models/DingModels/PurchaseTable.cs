@@ -78,6 +78,11 @@ namespace DingTalk.Models.DingModels
         /// </summary>
         [StringLength(50)]
         public string purchaseType { get; set; }
-        
+        /// <summary>
+        /// ËÍ»õµØµã
+        /// </summary>
+        [StringLength(100)]
+        public string SendPosition { get; set; }
+
     }
 }

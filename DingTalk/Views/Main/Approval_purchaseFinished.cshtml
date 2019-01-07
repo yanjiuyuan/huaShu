@@ -9,7 +9,6 @@
         成品采购审批-{{nodeInfo.NodeName}}
     </div>
     <el-collapse v-model="activeNames">
-        @*<el-collapse-item v-for="(d,i) in dataList" :name="i+1" :key="i">*@
         <el-form :model="tableInfo" :rules="rules" ref="tableInfo" label-width="80px" class="demo-ruleForm"
                  id="uploadForm" enctype="multipart/form-data" style="margin-top:30px">
             <el-form-item label="标题">
@@ -30,15 +29,27 @@
             <el-form-item label="备注">
                 <el-input v-model="tableInfo.Remark" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
-
+            <el-button type="primary" v-on:click="stampAndGet">盖章并获取</el-button>
+            <el-button type="primary" v-on:click="printExcel">打印EXCEL</el-button>
         </el-form>
 
         <el-table :data="dataList" border style="width: 100%;margin-bottom:30px">
             <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
             <el-table-column prop="Name" label="物料名称"></el-table-column>
             <el-table-column prop="Standard" label="规格型号"></el-table-column>
-            <el-table-column prop="Unit" label="预计单价"></el-table-column>
-            <el-table-column label="采购员" v-if="NodeId == 4">
+            <el-table-column prop="Unit" label="单位"></el-table-column>
+            <el-table-column prop="Count" label="数量"></el-table-column>
+
+            <el-table-column prop="Purpose" label="用途"></el-table-column>
+            <el-table-column prop="Price" label="预计价格"></el-table-column>
+            <el-table-column prop="UrgentDate" label="需用日期"></el-table-column>
+            <el-table-column prop="SendPosition" label="送货地点"></el-table-column>
+            <el-table-column prop="Mark" label="备注"></el-table-column>
+
+            <el-table-column prop="PurchaseMan" label="采购员"></el-table-column>
+
+
+            <el-table-column label="采购员" v-if="NodeId == 5">
                 <template slot-scope="scope">
                     <el-select v-model="scope.row.PurchaseManId" placeholder="请选择" v-on:change="choosePeople">
                         <el-option v-for="item in options"
@@ -49,6 +60,7 @@
                     </el-select>
                 </template>
             </el-table-column>
+
         </el-table>
         @*<el-table-column prop="Price" label="实际单价" v-if="NodeId == 2">
                 <template slot-scope="scope">
@@ -70,6 +82,11 @@
             <el-form-item>
                 <el-button type="primary" v-on:click="onSubmit" :disabled="disablePage">同意</el-button>
                 <el-button v-if="nodeInfo.IsBack" type="warning" v-on:click="returnBk" :disabled="disablePage">退回</el-button>
+            </el-form-item>
+        </template>
+        <template v-if="index==2 && state=='已撤回'">
+            <el-form-item>
+                <el-button type="primary" v-on:click="reApproval" :disabled="disablePage">重新发起</el-button>
             </el-form-item>
         </template>
         <template v-if="index==2 && state=='未完成'">
@@ -105,7 +122,6 @@
                 ruleForm: {
                     Mark: ''
                 },
-
                 options: [],
                 emplId: ''
             }
@@ -115,7 +131,7 @@
                 console.log('submit!')
                 var that = this
                 let callBack = function () { }
-                if (NodeId == '4') {
+                if (NodeId == '5') {
                     let url = '/Purchase/ModifyPurchaseTable'
                     that._postData(url, function (data) {
                         that.aggreSubmit({
@@ -131,7 +147,10 @@
                     })
                 }
             },
-            choosePeople(chooseId,row) {
+
+
+
+            choosePeople(chooseId, row) {
                 console.log('change people~~~~~~~~~')
                 for (let d of this.dataList) {
                     for (let o of this.options) {
@@ -144,7 +163,7 @@
             },
             setChooseMan() {
                 var that = this
-                if (NodeId != 4) return
+                if (NodeId != 5) return
                 var mans = []
                 for (let d of this.dataList) {
                     mans.push({
@@ -161,7 +180,7 @@
                 }, [])
 
                 console.log(mans)
-                var nodeId = NodeId + 1
+                var nodeId = NodeId + 2
                 for (let node of that.nodeList) {
                     if (node.NodeId == nodeId) {
                         $("." + nodeId).remove()
@@ -184,25 +203,87 @@
                 var param = {
                     TaskId: TaskId
                 }
-                if (NodeId == 5) param.PurchaseManId = DingData.userid
-                this._getData("Role/GetRoleInfo", function (data) {
-                    console.log('获取采购员信息')
-                    console.log(JSON.stringify(data))
-                    that.options = data
+                var ifTrue = false
 
-                    that._getData("/Purchase/ReadPurchaseTable", function (data) {
-                        console.log('获取bom表')
-                        for (let d of data) {
-                            d['PurchaseMan'] = that.options[0].name
-                            d['PurchaseManId'] = that.options[0].emplId
+                var nodeListNew = []
+                this._getData("/FlowInfo/GetSign", function (data) {
+                    nodeListNew = data
+
+                    for (let node of nodeListNew) {
+                        if (node.NodeId == 7 && node.ApplyManId == DingData.userid) {
+                            ifTrue = true
                         }
-                        console.log(param)
-                        console.log(data)
-                        that.dataList = data
-                        that.setChooseMan()
-                    }, param)
+                    }
+                    console.log(nodeListNew);
+                    console.log("ifTrue:  "+ ifTrue);
+                    if (ifTrue) {
+                        param.PurchaseManId = DingData.userid
+                        console.log("追加参数" + DingData.userid)
+                    } 
 
-                }, { RoleName: "采购员" })
+                    that._getData("Role/GetRoleInfo", function (data) {
+                        console.log('获取采购员信息')
+                        console.log(JSON.stringify(data))
+                        that.options = data
+
+                        that._getData("/Purchase/ReadPurchaseTable", function (data) {
+                            console.log('获取bom表')
+
+                            if (NodeId == 5) {
+                                for (let d of data) {
+                                    for (let o of that.options) {
+
+                                        if (o.name == '杜双凤') {
+                                            d['PurchaseMan'] = o.name
+                                            d['PurchaseManId'] = o.emplId
+                                        }
+                                    }
+                                }
+                            }
+                            console.log(param)
+                            console.log(data)
+                            that.dataList = data
+                            that.setChooseMan()
+                        }, param)
+                    }, { RoleName: "采购员" })
+                    
+                }, { FlowId: FlowId, TaskId: TaskId })
+            
+               
+            },
+            stampAndGet() {
+                var paramObj = {
+                    UserId: DingData.userid,
+                    TaskId: TaskId
+                }
+
+                var that = this
+                this._postData("/Purchase/PrintAndSend", function (data) {
+                    console.log("PrintAndSendStart")
+                    var alertStr = "已推送至钉钉"
+                    that.$alert(alertStr, '消息', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+
+                        }
+                    });
+                }, paramObj)
+            },
+            printExcel() {
+                var paramObj = {
+                    UserId: DingData.userid,
+                    TaskId: TaskId
+                }
+                var that = this
+                this._getData("/Purchase/PrintExcel", function (data) {
+                    var alertStr = '已推送至钉钉'
+                    that.$alert(alertStr, '消息', {
+                        confirmButtonText: '确定',
+                        callback: action => {
+
+                        }
+                    });
+                }, paramObj)
             }
         },
         created: function () {
