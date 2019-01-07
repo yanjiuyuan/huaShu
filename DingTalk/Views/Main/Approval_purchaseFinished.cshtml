@@ -49,7 +49,7 @@
             <el-table-column prop="PurchaseMan" label="采购员"></el-table-column>
 
 
-            <el-table-column label="采购员" v-if="NodeId == 5">
+            <el-table-column label="采购员" v-if="NodeId == 4">
                 <template slot-scope="scope">
                     <el-select v-model="scope.row.PurchaseManId" placeholder="请选择" v-on:change="choosePeople">
                         <el-option v-for="item in options"
@@ -135,7 +135,7 @@
                 console.log('submit!')
                 var that = this
                 let callBack = function () { }
-                if (NodeId == '5') {
+                if (NodeId == '4') {
                     let url = '/Purchase/ModifyPurchaseTable'
                     that._postData(url, function (data) {
                         that.aggreSubmit({
@@ -167,7 +167,7 @@
             },
             setChooseMan() {
                 var that = this
-                if (NodeId != 5) return
+                if (NodeId != 4) return
                 var mans = []
                 for (let d of this.dataList) {
                     mans.push({
@@ -224,7 +224,7 @@
                     nodeListNew = data
 
                     for (let node of nodeListNew) {
-                        if (node.NodeId == 7 && node.ApplyManId == DingData.userid) {
+                        if (node.NodeId == 6 && node.ApplyManId == DingData.userid) {
                             ifTrue = true
                         }
                     }
@@ -243,7 +243,7 @@
                         that._getData("/Purchase/ReadPurchaseTable", function (data) {
                             console.log('获取bom表')
 
-                            if (NodeId == 5) {
+                            if (NodeId == 4) {
                                 for (let d of data) {
                                     for (let o of that.options) {
 
