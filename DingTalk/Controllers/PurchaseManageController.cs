@@ -349,7 +349,22 @@ namespace DingTalk.Controllers
 
 
                     List<Roles> roles = context.Roles.Where(r => r.RoleName.Contains("物料采购员")).ToList();
-                    List<Tasks> tasks = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId==7).ToList();
+
+                    //获取表单信息
+                    Tasks tasksApplyMan = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId == 0).First();
+                    string FlowId = tasksApplyMan.FlowId.ToString();
+
+                    string NodeId = "";
+                    if (FlowId == "24")  //零部件
+                    {
+                        NodeId = "7";
+                    }
+                    else
+                    {
+                        NodeId = "6";
+                    }
+
+                    List<Tasks> tasks = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId.ToString() == NodeId).ToList();
                     List<Roles> rolesList = new List<Roles>();
                     foreach (var task in tasks)
                     {
@@ -413,7 +428,7 @@ namespace DingTalk.Controllers
                 {
                     if (nodeInfo.NodePeople.Length > 3)
                     {
-                        nodeInfo.NodePeople = nodeInfo.NodePeople.Substring(0,3);
+                        nodeInfo.NodePeople = nodeInfo.NodePeople.Substring(0, 3);
                     }
                 }
 
@@ -456,12 +471,12 @@ namespace DingTalk.Controllers
             }
             else
             {
-                Contract contract = context.Contract.Where(p=>p.ContractNo== ProjectId).First();
+                Contract contract = context.Contract.Where(p => p.ContractNo == ProjectId).First();
                 ProjectName = contract.ContractName;
                 ProjectNo = contract.ContractNo;
             }
-        
-          
+
+
 
             //绘制BOM表单PDF
             List<string> contentList = new List<string>()
@@ -527,10 +542,20 @@ namespace DingTalk.Controllers
                     var SelectPurchaseList = from p in purchaseTables
                                              select new
                                              {
-                                                 p.Id,p.TaskId,p.CodeNo,
-                                                 p.Name,Type=p.Standard,p.Unit,
-                                                 p.Count,p.Price,p.Purpose,p.UrgentDate,p.Mark,p.SendPosition,
-                                                 p.PurchaseMan,p.purchaseType
+                                                 p.Id,
+                                                 p.TaskId,
+                                                 p.CodeNo,
+                                                 p.Name,
+                                                 Type = p.Standard,
+                                                 p.Unit,
+                                                 p.Count,
+                                                 p.Price,
+                                                 p.Purpose,
+                                                 p.UrgentDate,
+                                                 p.Mark,
+                                                 p.SendPosition,
+                                                 p.PurchaseMan,
+                                                 p.purchaseType
                                              };
                     DataTable dtpurchaseTables = DtLinqOperators.CopyToDataTable(SelectPurchaseList);
 
