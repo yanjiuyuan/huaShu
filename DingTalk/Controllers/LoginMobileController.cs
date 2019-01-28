@@ -31,14 +31,27 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("Bintang")]
-        public async Task<object> Bintang(string authCode)
+        public async Task<NewErrorModel> Bintang(string authCode)
         {
             try
             {
+                DingTalkServersController dingTalkServersController = new DingTalkServersController();
                 string accessToken = await GetAccessToken();
                 string userId = await GetUserId(accessToken, authCode);
                 string accessTokenT = await GetAccessToken();
-                var userInfo = await GetUserInfo(accessTokenT, userId);
+                UserInfoMobileModel userInfo = await GetUserInfo(accessTokenT, userId);
+                string DeptInfo = await dingTalkServersController.departmentQuaryByUserId(userInfo.userid);
+                DeptModel dept = JsonConvert.DeserializeObject<DeptModel>(DeptInfo);
+
+                if (dept.errcode == 0)
+                {
+                    userInfo.dept = dept.name;
+                }
+                else
+                {
+                    userInfo.dept = dept.errmsg;
+                }
+
                 return new NewErrorModel()
                 {
                     data = userInfo,
@@ -49,7 +62,7 @@ namespace DingTalk.Controllers
             {
                 return new NewErrorModel()
                 {
-                    error = new Error(1, ex.Message, "") { },
+                    error = new Error(2, ex.Message, "") { },
                 };
             }
         }
@@ -97,13 +110,13 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetUserInfo")]
-        public async Task<object> GetUserInfo(string access_token, string userId)
+        public async Task<UserInfoMobileModel> GetUserInfo(string access_token, string userId)
         {
             _client.QueryString.Add("access_token", access_token);
             _client.QueryString.Add("userid", userId);
             var url = _addressConfig.GetUserDetailUrl;
             var result = await _client.Get(url);
-            var userInfo = JsonConvert.DeserializeObject<DingTalk.Models.MobileModels.UserInfoMobileModel>(result);
+            UserInfoMobileModel userInfo = JsonConvert.DeserializeObject<DingTalk.Models.MobileModels.UserInfoMobileModel>(result);
             return userInfo;
         }
 
