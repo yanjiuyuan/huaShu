@@ -346,6 +346,7 @@
     <Compile Include="Controllers\DrawingUploadController.cs" />
     <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Controllers\FlowInfoController.cs" />
+    <Compile Include="Controllers\FlowInfoNewController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ItemCodeAddController.cs" />
     <Compile Include="Controllers\JobManangerController.cs" />
@@ -469,6 +470,7 @@
     <Compile Include="Models\ResponseBaseModel.cs" />
     <Compile Include="Models\SendOAModel.cs" />
     <Compile Include="Models\SendProgressModel.cs" />
+    <Compile Include="Models\TaskFlowModel.cs" />
     <Compile Include="Models\TextMsgModel.cs" />
     <Compile Include="Models\UploadMediaRequestModel.cs" />
     <Compile Include="Models\UploadMediaType.cs" />
