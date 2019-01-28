@@ -361,6 +361,7 @@
     <Compile Include="Controllers\PatentManagerController.cs" />
     <Compile Include="Controllers\ProjectController.cs" />
     <Compile Include="Controllers\PurchaseManageController.cs" />
+    <Compile Include="Controllers\PurchaseNewController.cs" />
     <Compile Include="Controllers\PurchaseOrderController.cs" />
     <Compile Include="Controllers\ReceivingManagerController.cs" />
     <Compile Include="Controllers\RegisterController.cs" />
