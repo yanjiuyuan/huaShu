@@ -40,6 +40,10 @@
             <el-table-column prop="Standard" label="规格型号"></el-table-column>
             <el-table-column prop="Unit" label="单位"></el-table-column>
             <el-table-column prop="Count" label="数量"></el-table-column>
+            <el-table-column prop="UrgentDate" label="需用日期"></el-table-column>
+            <el-table-column prop="SendPosition" label="送货地点"></el-table-column>
+            <el-table-column prop="Purpose" label="用途"></el-table-column>
+            <el-table-column prop="Mark" label="备注"></el-table-column>
             <el-table-column label="采购员" v-if="NodeId == 5">
                 <template slot-scope="scope">
                     <el-select v-model="scope.row.PurchaseManId" placeholder="请选择" v-on:change="choosePeople">
