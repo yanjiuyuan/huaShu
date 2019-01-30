@@ -57,5 +57,59 @@ namespace DingTalk.Controllers
                 };
             }
         }
+
+
+
+        /// <summary>
+        /// 获取角色信息(新)
+        /// </summary>
+        /// <param name="RoleName">角色名(不传默认全查)</param>
+        /// <returns></returns>
+        /// 测试数据: Role/GetRoleInfo?RoleName=图纸校对人员
+        [Route("GetRoleInfoNew")]
+        [HttpGet]
+        public NewErrorModel GetRoleInfoNew(string RoleName)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    if (string.IsNullOrEmpty(RoleName))
+                    {
+                        var RoleList = context.Roles.ToList();
+
+                        return new NewErrorModel()
+                        {
+                            data = RoleList,
+                            error = new Error(0, "获取成功！", "") { },
+                        };
+                    }
+                    else
+                    {
+                        var RoleList = context.Roles.Where(r => r.RoleName.Contains(RoleName)).ToList();
+                        var Quary = from r in RoleList
+                                    select new
+                                    {
+                                        RoleName = r.RoleName,
+                                        name = r.UserName,
+                                        emplId = r.UserId
+                                    };
+
+                        return new NewErrorModel()
+                        {
+                            data = Quary,
+                            error = new Error(0, "获取成功！", "") { },
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(2, ex.Message, "") { },
+                };
+            }
+        }
     }
 }
