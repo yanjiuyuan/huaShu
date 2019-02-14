@@ -1011,9 +1011,10 @@ var mixin = {
         //根据taskId获取下一个需要审批的人，即要钉的人
         GetDingList(taskId) {
             var that = this
-            this._getData('/DingTalkServers/Ding', function (data) {
-                if (data.ApplyManId) {
-                    that.dingList.push(data.ApplyManId)
+            this._getData('/DingTalkServers/Ding', function (res) {
+                let applyManId = res.data.ApplyManId
+                if (applyManId) {
+                    that.dingList.push(applyManId)
                 }
                 else that.dingList = []
             }, { taskId: taskId })
