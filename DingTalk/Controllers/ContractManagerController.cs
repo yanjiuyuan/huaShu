@@ -25,7 +25,7 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("Add")]
-        public object Add(Contract contract)
+        public NewErrorModel Add(Contract contract)
         {
             try
             {
@@ -57,8 +57,6 @@ namespace DingTalk.Controllers
                         };
                     }
                 }
-               
-
             }
             catch (Exception ex)
             {
@@ -78,7 +76,7 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("Modify")]
-        public object Modify(Contract contract)
+        public NewErrorModel Modify(Contract contract)
         {
             try
             {
@@ -119,7 +117,7 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("Del")]
-        public object Del(int Id, string ApplyManId)
+        public NewErrorModel Del(int Id, string ApplyManId)
         {
             try
             {
@@ -162,7 +160,7 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("Quary")]
-        public object Quary( int pageIndex, int pageSize, string keyword = "")
+        public NewErrorModel Quary( int pageIndex, int pageSize, string keyword = "")
         {
             try
             {
