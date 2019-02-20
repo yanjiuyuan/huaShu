@@ -101,7 +101,7 @@
         TaskId = UrlObj.taskid
         state = UrlObj.state
         Id = UrlObj.id
-        var Index = UrlObj.index
+        Index = UrlObj.index
     }
     var demo = new Vue({
         el: "#partPage",
@@ -239,16 +239,7 @@
                     console.log('获取采购员信息')
                     console.log(JSON.stringify(data))
 
-                    that.options = data
-
-
-                    //for (let o of options) {
-                    //    if (o.name == '') {
-                    //        that.options[0].selected = true;
-                    //    }
-                    //}
-
-                   
+                    that.options = data                
 
                     that._getData("/Purchase/ReadPurchaseTable", function (data) {
                         console.log('获取bom表')
@@ -261,6 +252,15 @@
                                     }
                                 }
                             }
+                        }
+                        if (NodeId == 7 && Index == 0) {
+                            let tmp = []
+                            for (let d of data) {
+                                if (d.PurchaseManId == DingData.userid) {
+                                    tmp.push(d)
+                                }
+                            }
+                            data = tmp
                         }
                         console.log(param)
                         console.log(data)

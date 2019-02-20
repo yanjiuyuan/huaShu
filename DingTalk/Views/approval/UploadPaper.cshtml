@@ -58,7 +58,7 @@
                 </el-option>
             </el-select>
             @*<el-button class="button-new-tag" size="small" v-on:click="showAddProject = true">+ 添加项目</el-button>
-            <el-button v-show="showAddProject" class="button-new-tag" size="small" v-on:click="showAddProject = false">隐藏</el-button>*@
+                <el-button v-show="showAddProject" class="button-new-tag" size="small" v-on:click="showAddProject = false">隐藏</el-button>*@
         </el-form-item>
 
         <el-form-item label="标题" prop="Title">
@@ -109,7 +109,7 @@
                        action="/drawingupload/Upload"
                        :on-remove="handleFileRemove"
                        :before-remove="isPdfFile = false"
-                       :before-upload="beforeFileUpload"
+                       :before-upload="BeforeFileUpload"
                        :on-success="HandleFileSuccess"
                        multiple>
                 <i class="el-icon-upload"></i>
@@ -123,11 +123,9 @@
         </sam-approver-list>
         <!--添加抄送人-->
         @*<sam-addapprover :preset="preCopy" :approvers="ruleForm.copyers">
-        </sam-addapprover>*@
+            </sam-addapprover>*@
         <el-form-item>
             <el-button type="primary" v-on:click="onSubmit('ruleForm')" :disabled="disablePage">提交</el-button>
-            <el-button v-on:click="resetForm('ruleForm')">重置</el-button>
-            @*<el-button v-on:click="downLoad">下载</el-button>*@
         </el-form-item>
     </el-form>
 </el-main>
@@ -233,7 +231,7 @@
                                 }
                             });
                             that.disablePage = false
-                            return 
+                            return
                         }
                         paramArr.push({
                             "ApplyMan": DingData.nickName,
@@ -257,20 +255,20 @@
                             "ProjectName": ProjectName,
                             "ProjectId": that.ruleForm.ProjectId,
                             "PdfState": stateArr.join(',')
-                        }) 
+                        })
                         for (let node of that.nodeList) {
-                            if (this.specialRoleNames.indexOf(node.NodeName)>=0) {
+                            if (this.specialRoleNames.indexOf(node.NodeName) >= 0) {
                                 console.log(node)
                                 console.log(node.AddPeople)
                                 if (!that.preApprove && node.AddPeople.length == 0) {
                                     this.$alert('您尚未选择审批人', '提交错误', {
                                         confirmButtonText: '确定',
                                         callback: action => {
-                                            
+
                                         }
                                     });
                                     that.disablePage = false
-                                    return 
+                                    return
                                 }
                                 for (let a of node.AddPeople) {
                                     paramArr.push({
@@ -295,7 +293,7 @@
                             success: function (data) {
                                 console.log("提交审批ok")
                                 var taskId = JSON.parse(data).Content
-                                console.log(paramArr)
+                                console.log(JSON.stringify(paramArr))
                                 console.log(taskId)
                                 that.bindData(taskId)
                             }
@@ -308,24 +306,6 @@
                         return false;
                     }
                 });
-            },
-            downLoad() {
-                var that = this
-                let url = '123.PDF'
-                url = '/NewsAndCases/DownloadFile'
-                
-                //window.location.href = url
-                //window.open(url)
-
-
-                that._postData(url, function (result) {
-                    console.log(result.data.replace("application/pdf", "pdf/octet-stream"))
-                    window.location.href = result.data.replace("application/pdf", "pdf/octet-stream")
-                    
-                }, {
-                        FileName: '123.pdf',
-                        FilePath:'~/UploadFile/PDF/123.PDF'
-                    })
             },
             //bom表格翻页
             handleBomPageChange(page, index) {
@@ -390,7 +370,7 @@
                     } else {
                         if (data['Column1'] && data['Column1'] != "") {
                             this.dataArr[this.bomIndex].data.push(data)
-                            this.data.push(data) 
+                            this.data.push(data)
                             upBom.push({
                                 BomId: BomId,
                                 DrawingNo: data.Column1,
@@ -419,7 +399,7 @@
             beforeRemove(file, fileList) {
                 return this.$confirm(`确定移除 ${file.name}？`);
             },
-            
+
             handleFileRemove(file, fileList) {
                 this.isPdfFile ? this.pdfList = _cloneArr(fileList) : this.fileList = _cloneArr(fileList)
             },
@@ -440,17 +420,15 @@
                         console.log(paramObj)
                         if (data.media_id) {
                             console.log(data.media_id)
-                            //isPdf ? that.mediaPdfList.push(data.media_id) : that.mediaList.push(data.media_id)
                             that.mediaPdfList.push(data.media_id)
                         } else {
                             console.log('无media_di')
                         }
-                        //that.isPdfFile ? that.pdfList = _cloneArr(fileList) : that.fileList = _cloneArr(fileList)
                         that.pdfList = _cloneArr(fileList)
                     }
                 })
             },
-            
+
             beforeExcelUpload(file) {
                 console.log('before excel')
                 console.log(file)
@@ -467,7 +445,6 @@
                 return true
             },
             beforePdfFileUpload(file) {
-                console.log('before pdf')
                 console.log(file)
                 file.name = 'helloWorld'
                 isPdf = true
@@ -484,24 +461,11 @@
                 this.isPdfFile = true
                 return true
             },
-            beforeFileUpload(file) {
-                console.log('before file')
-                console.log(file)
-                file.name = 'helloWorld'
-                isPdf = false
-                const isLt2M = file.size / 1024 / 1024 < 10
-                if (!isLt2M) {
-                    this.$message.error('上传文件大小不能超过 10MB!')
-                    return false
-                }
-                this.isPdfFile = false
-                return true
-            },
             handlePictureCardPreview(file) {
                 this.dialogImageUrl = file.url;
                 this.dialogVisible = true;
             },
-            
+
             //加载重新发起审批传递的数据
             loadReApprovalData() {
                 if (!ReApprovalTempData.valid) return
@@ -515,7 +479,7 @@
                 var preUrl = 'http://' + window.location.host
                 for (let f of this.fileList) {
                     f["response"] = {
-                        Content: f.url.replace(preUrl,'~')
+                        Content: f.url.replace(preUrl, '~')
                     }
                 }
                 for (let p of this.pdfList) {
@@ -536,7 +500,7 @@
                     console.log(upBom)
                 }
             }
-            
+
         },
         created: function () {
             //FlowId = 8
@@ -555,8 +519,8 @@
 </script>
 
 <style>
-    .upload-demo{
-        width:400px;
+    .upload-demo {
+        width: 400px;
     }
 </style>
 
