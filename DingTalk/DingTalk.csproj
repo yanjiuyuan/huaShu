@@ -344,6 +344,7 @@
     <Compile Include="Controllers\ContractManagerController.cs" />
     <Compile Include="Controllers\DrawingDownController.cs" />
     <Compile Include="Controllers\DrawingUploadController.cs" />
+    <Compile Include="Controllers\DrawingUploadNewController.cs" />
     <Compile Include="Controllers\FileController.cs" />
     <Compile Include="Controllers\FlowInfoController.cs" />
     <Compile Include="Controllers\FlowInfoNewController.cs" />
