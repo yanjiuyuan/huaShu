@@ -13,6 +13,7 @@ var ReApprovalTempData = {} //重新发起审批保存的临时数据
 var imageList = []
 var fileList = []
 var pdfList = []
+let jinDomarn = 'http://caixingtong.qicp.vip:26629/api/'
 
 //原型方法
 Array.prototype.removeByValue = function (val) {

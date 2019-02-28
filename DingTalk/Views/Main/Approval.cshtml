@@ -32,6 +32,10 @@
 </el-main>
 
 <script>
+    var x = -54
+    var y = -46
+    var xTap = -90
+    var yTap = -90
     imgConfig = [
         {
             flowId: 24,
@@ -118,6 +122,18 @@
             sortId: 2,
             url: '/approval/ContractManager',//合同管理
             position: '-54px -318px'
+        },
+        {
+            flowId: 26,
+            sortId: 4,
+            url: '/approval/picking',
+            position: (x + 1 * xTap) + 'px ' + (y + 4 * yTap) + 'px'
+        },
+        {
+            flowId: 27,
+            sortId: 4,
+            url: '/approval/intoStorage',
+            position: (x + 3 * xTap) + 'px ' + (y + 4 * yTap) + 'px'
         }
     ]
     var demo = new Vue({
