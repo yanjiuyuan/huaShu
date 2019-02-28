@@ -1559,7 +1559,7 @@ namespace DingTalk.Controllers
                 if (IsBack)
                 {
                     return await dingTalkServersController.sendOaMessage(ApplyManId,
-                   string.Format("您的一条被退回的流程(流水号:{0})，详情请及点击进入研究院信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
+                   string.Format("您的一条被退回的流程(流水号:{0})，详情请及点击进入华数机器人信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
                    ApplyMan, "eapp://page/approve/approve?index=2");
                 }
                 else
@@ -1567,13 +1567,13 @@ namespace DingTalk.Controllers
                     if (IsSend)
                     {
                         return await dingTalkServersController.sendOaMessage(ApplyManId,
-                  string.Format("您有一条抄送的流程(流水号:{0})，请及点击进入研究院信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
+                  string.Format("您有一条抄送的流程(流水号:{0})，请及点击进入华数机器人信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
                   ApplyMan, "eapp://page/approve/approve?index=3");
                     }
                     else
                     {
                         return await dingTalkServersController.sendOaMessage(ApplyManId,
-                   string.Format("您有一条待审批的流程(流水号:{0})，请及点击进入研究院信息管理系统进行审批。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
+                   string.Format("您有一条待审批的流程(流水号:{0})，请及点击进入华数机器人信息管理系统进行审批。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
                    ApplyMan, "eapp://page/approve/approve?index=0");
                     }
                 }
@@ -1582,23 +1582,22 @@ namespace DingTalk.Controllers
             {
                 if (IsBack)
                 {
-                    SentCommonMsg(ApplyManId, string.Format("您有被退回的流程(流水号:{0})，请及点击进入研究院信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
+                    SentCommonMsg(ApplyManId, string.Format("您有一条被退回的流程(流水号:{0})，请进入华数机器人信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
                 }
                 else
                 {
                     if (IsSend)
                     {
-                        SentCommonMsg(ApplyManId, string.Format("您有一条抄送的流程(流水号:{0})，请及点击进入研究院信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
+                        SentCommonMsg(ApplyManId, string.Format("您有一条抄送的流程(流水号:{0})，请及进入华数机器人信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
                     }
                     else
                     {
-                        SentCommonMsg(ApplyManId, string.Format("您有一条待审批的流程(流水号:{0})，请及点击进入研究院信息管理系统进行审批。", TaskId), ApplyMan, Remark, null);
+                        SentCommonMsg(ApplyManId, string.Format("您有一条待审批的流程(流水号:{0})，请及进入华数机器人信息管理系统进行审批。", TaskId), ApplyMan, Remark, null);
                     }
                 }
-
-
+                
                 return dingTalkServersController.sendOaMessage("测试",
-                       string.Format("您有一条待审批的流程(流水号:{0})，请及点击进入研究院信息管理系统进行审批。", TaskId),
+                       string.Format("您有一条待审批的流程(流水号:{0})，请及进入研究院信息管理系统进行审批。", TaskId),
                        ApplyMan, "eapp://page/approve/approve");
             }
         }
