@@ -130,7 +130,7 @@
             <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
                 <el-option v-for="item in projectList"
                            :key="item.ContractNo"
-                           :label="item.ContractName"
+                           :label="item.ContractName + ' -编号: ' + item.ContractNo"
                            :value="item.ContractNo">
                     <span style="float: left">{{ item.ContractName }}  -编号: {{item.ContractNo}}</span>
                     <span style="float: right; color: #8492a6; font-size: 13px"></span>

@@ -13,6 +13,7 @@ var ReApprovalTempData = {} //重新发起审批保存的临时数据
 var imageList = []
 var fileList = []
 var pdfList = []
+let jinDomarn = 'http://1858o1s713.51mypc.cn:46389/api/'
 
 //原型方法
 Array.prototype.removeByValue = function (val) {
@@ -416,6 +417,8 @@ var mixin = {
                 { required: true, message: '合同签订单位不能为空！', trigger: 'blur' }
             ],
         },
+        projectList: [],
+        pdfList: [],
         pickerOptions: pickerOptions,
         showAddProject: false,
         currentPage: 1,
@@ -427,6 +430,57 @@ var mixin = {
         
     },
     methods: {
+        doWithErrcode(error) {
+            if (!error) {
+                return 1
+            }
+            if (error && error.errorCode != 0) {
+                this.elementAlert('报错信息', error.errorMessage)
+                return 1
+            }
+            return 0
+        },
+        GetData(url, succe) {
+            var that = this
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function (res) {
+                    console.log(url)
+                    console.log(res)
+                    if (that.doWithErrcode(res.error)) {
+                        return
+                    }
+                    succe(res.data)
+                },
+                error: function (err) {
+                    console.error(url)
+                    console.error(err)
+                }
+            })
+        },
+        PostData(url, param, succe) {
+            var that = this
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(param),
+                success: function (res) {
+                    console.log(url)
+                    console.log(param)
+                    console.log(res)
+                    if (that.doWithErrcode(res.error)) {
+                        return
+                    }
+                    succe(res.data)
+                },
+                error: function (err) {
+                    console.error(url)
+                    console.error(err)
+                }
+            })
+        },
         //提交审批
         approvalSubmit(formName, param, callBack, param2 = {}) {
             var that = this
@@ -450,7 +504,7 @@ var mixin = {
                     }
                     paramArr.push(applyObj)
                     for (let node of that.nodeList) {
-                        if (that.nodeInfo.IsNeedChose && that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) {
+                        if ((that.nodeInfo.IsNeedChose && that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) || (node.NodeName.indexOf('申请人') >= 0 && node.NodeId > 0)) {
                             console.log(node)
                             console.log(node.ApplyMan)
                             console.log(node.AddPeople)
@@ -655,8 +709,9 @@ var mixin = {
                 imageList: this.imageList,
                 fileList: this.fileList,
                 pdfList: tmpPdfList,
-                items: items
+                //items: items
             }
+            console.warn(ReApprovalTempData)
             for (let img of imgConfig) {
                 if (img.flowId == FlowId) {
                     loadPage(img.url)
