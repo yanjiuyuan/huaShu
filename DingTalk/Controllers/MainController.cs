@@ -74,7 +74,11 @@ namespace WebZhongZhi.Controllers
         {
             return View();
         }
-        public ActionResult VoteList()
+        public ActionResult Approval_picking()
+        {
+            return View();
+        }
+        public ActionResult Approval_intoStorage()
         {
             return View();
         }

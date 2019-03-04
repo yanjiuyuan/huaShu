@@ -717,6 +717,8 @@
     <Content Include="Views\Main\Approval_purchaseFinished.cshtml" />
     <Content Include="Views\approval\Picking.cshtml" />
     <Content Include="Views\approval\IntoStorage.cshtml" />
+    <Content Include="Views\Main\Approval_picking.cshtml" />
+    <Content Include="Views\Main\Approval_intoStorage.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
