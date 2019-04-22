@@ -6,6 +6,7 @@ using DingTalk.Models.DingModels;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
@@ -1056,9 +1057,9 @@ namespace DingTalk.Controllers
         /// </summary>
         /// <param name="ApplyManId">用户名Id</param>
         /// <returns>返回待审批的、我发起的、抄送我的数量</returns>
+        /// 测试数据 /FlowInfo/GetFlowStateCounts?ApplyManId=123456
         [HttpGet]
-        [Route("GetFlowStateCounts")]
-        public NewErrorModel GetFlowStateCounts(string ApplyManId)
+        public string GetFlowStateCounts(string ApplyManId)
         {
             try
             {
@@ -1075,21 +1076,20 @@ namespace DingTalk.Controllers
                     dic.Add("MyPostCount", iMyPost);
                     dic.Add("SendMyCount", iSendMy);
 
-                    return new NewErrorModel()
-                    {
-                        data = dic,
-                        error = new Error(0, "读取成功！", "") { },
-                    };
+                    return JsonConvert.SerializeObject(dic);
                 }
             }
             catch (Exception ex)
             {
-                return new NewErrorModel()
+                return JsonConvert.SerializeObject(new ErrorModel
                 {
-                    error = new Error(2, ex.Message, "") { },
-                };
+                    errorCode = 1,
+                    errorMessage = ex.Message
+                });
             }
         }
+
+
 
         /// <summary>
         /// 左侧审批状态详细数据读取
@@ -1098,9 +1098,9 @@ namespace DingTalk.Controllers
         /// <param name="ApplyManId">用户名Id</param>
         /// <param name="IsSupportMobile">是否是手机端调用接口(默认 false)</param>
         /// <returns> State 0 未完成 1 已完成 2 被退回</returns>
+        /// 测试数据： /FlowInfo/GetFlowStateDetail?Index=1&ApplyManId=083452125733424957
         [HttpGet]
-        [Route("GetFlowStateDetail")]
-        public NewErrorModel GetFlowStateDetail(int Index, string ApplyManId, bool IsSupportMobile = false)
+        public string GetFlowStateDetail(int Index, string ApplyManId, bool IsSupportMobile = false)
         {
             try
             {
@@ -1112,64 +1112,39 @@ namespace DingTalk.Controllers
                         case 0:
                             //待审批的
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId != 0 && u.IsSend == false && u.State == 0 && u.IsPost != true && u.ApplyTime == null).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-
-                            return new NewErrorModel()
-                            {
-                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile),
-                                error = new Error(0, "读取成功！", "") { },
-                            };
+                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
                         case 1:
                             //我已审批
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId != 0 && u.IsSend == false && u.State == 1 && u.IsPost != true && u.ApplyTime != null).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-
-                            return new NewErrorModel()
-                            {
-                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile),
-                                error = new Error(0, "读取成功！", "") { },
-                            };
+                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
                         case 2:
                             //我发起的
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId == 0 && u.IsSend == false && u.State == 1 && u.IsPost == true && u.ApplyTime != null).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-                            return new NewErrorModel()
-                            {
-                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile),
-                                error = new Error(0, "读取成功！", "") { },
-                            };
+                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
                         case 3:
                             //抄送我的
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId != 0 && u.IsSend == true && u.IsPost != true).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-                            return new NewErrorModel()
-                            {
-                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile),
-                                error = new Error(0, "读取成功！", "") { },
-                            };
+                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
                         default:
-                            return new NewErrorModel()
+                            return JsonConvert.SerializeObject(new ErrorModel
                             {
-                                error = new Error(1, "参数不正确！", "") { },
-                            };
+                                errorCode = 1,
+                                errorMessage = "参数不正确"
+                            });
                     }
                 }
             }
             catch (Exception ex)
             {
-                return new NewErrorModel()
+                return JsonConvert.SerializeObject(new ErrorModel
                 {
-                    error = new Error(2, ex.Message, "") { },
-                };
+                    errorCode = 2,
+                    errorMessage = ex.Message
+                });
             }
         }
-        /// <summary>
-        /// 辅助查询
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="ListTasks"></param>
-        /// <param name="ApplyManId"></param>
-        /// <param name="IsMobile"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("Quary")]
-        public object Quary(DDContext context, List<int?> ListTasks, string ApplyManId, bool IsMobile)
+
+        public string Quary(DDContext context, List<int?> ListTasks, string ApplyManId, bool IsMobile)
         {
             FlowInfoServer flowInfoServer = new FlowInfoServer();
             List<object> listQuary = new List<object>();
@@ -1222,6 +1197,12 @@ namespace DingTalk.Controllers
                 }
             }
 
+            //foreach (var item in listQuary)
+            //{
+            //    string TaskId = item.GetType().GetProperty("TaskId").GetValue(item).ToString();
+
+            //}
+
             string strJson = JsonConvert.SerializeObject(listQuary);
             List<List<TaskFlowModel>> TaskFlowModelListList = JsonConvert.DeserializeObject<List<List<TaskFlowModel>>>(strJson);
             List<TaskFlowModel> TaskFlowModelList = new List<TaskFlowModel>();
@@ -1243,16 +1224,9 @@ namespace DingTalk.Controllers
                     }
                 }
             }
-            return TaskFlowModelListQuery;
+            return JsonConvert.SerializeObject(TaskFlowModelListQuery);
         }
-        /// <summary>
-        /// 获取流程状态
-        /// </summary>
-        /// <param name="TaskId"></param>
-        /// <param name="ListTask"></param>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("GetTasksState")]
+
         public string GetTasksState(string TaskId, List<Tasks> ListTask)
         {
             List<Tasks> tasksListBack = ListTask.Where(t => t.TaskId.ToString() == TaskId && t.IsBacked == true).ToList();
@@ -1283,7 +1257,6 @@ namespace DingTalk.Controllers
 
 
         #endregion
-
         #region 审批意见数据读取
 
         /// <summary>
@@ -1643,6 +1616,37 @@ namespace DingTalk.Controllers
             return top.SendOaMessage(SendPeoPleId, oaTextModel);
         }
 
+
+        #endregion
+
+
+        #region 移动端版本校对
+
+        /// <summary>
+        /// 移动端版本校对
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("CheckVersion")]
+        public NewErrorModel CheckVersion()
+        {
+            try
+            {
+                return new NewErrorModel()
+                {
+                    data = ConfigurationManager.AppSettings["VersionNumner"],
+                    error = new Error(0, "获取成功！", "") { },
+                };
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    data = true,
+                    error = new Error(1, ex.Message, "") { },
+                };
+            }
+        }
 
         #endregion
     }

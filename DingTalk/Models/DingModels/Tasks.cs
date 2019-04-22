@@ -72,6 +72,11 @@ namespace DingTalk.Models.DingModels
         [StringLength(100)]
         public string counts { get; set; }
 
+        /// <summary>
+        /// ½ÚµãÃû³Æ
+        /// </summary>
+        [StringLength(200)]
+        public string NodeName { get; set; }
 
     }
 }
