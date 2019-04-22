@@ -33,7 +33,7 @@
             <el-button type="primary" v-on:click="printExcel">打印EXCEL</el-button>
         </el-form>
 
-        <el-table :data="dataList" border style="width: 100%;margin-bottom:30px">
+        <el-table :data="data" border style="width: 100%;margin-bottom:30px">
             <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
             <el-table-column prop="Name" label="物料名称"></el-table-column>
             <el-table-column prop="Standard" label="规格型号"></el-table-column>
@@ -80,7 +80,8 @@
                 <el-button v-if="nodeInfo.IsBack" type="warning" v-on:click="returnBk" :disabled="disablePage">退回</el-button>
             </el-form-item>
         </template>
-        <template v-if="index==2 && state=='已撤回'">
+        @*<template v-if="index==2 && ( state=='已撤回' || state=='被退回') ">*@
+        <template v-if="index==2">
             <el-form-item>
                 <el-button type="primary" v-on:click="reApproval" :disabled="disablePage">重新发起</el-button>
             </el-form-item>
@@ -110,7 +111,7 @@
         mixins: [mixin],
         data: function () {
             return {
-                dataList: [],
+                data: [],
                 NodeId: NodeId,
                 activeNames: [1, 2, 3, 4, 5, 6],
                 index: Index,
@@ -138,7 +139,7 @@
                             "Id": that.tableInfo.Id,
                             "Remark": that.ruleForm.Mark
                         })
-                    }, that.dataList)
+                    }, that.data)
                 }
                 else {
                     this.aggreSubmit({
@@ -152,7 +153,7 @@
 
             choosePeople(chooseId, row) {
                 console.log('change people~~~~~~~~~')
-                for (let d of this.dataList) {
+                for (let d of this.data) {
                     for (let o of this.options) {
                         if (d.PurchaseManId == o.emplId) {
                             d.PurchaseMan = o.name
@@ -164,8 +165,14 @@
             setChooseMan() {
                 var that = this
                 if (NodeId != 4) return
+                if (this.nodeList && this.nodeList.length == 0) {
+                    setTimeout(function () {
+                        that.setChooseMan()
+                        return
+                    }, 100)
+                }
                 var mans = []
-                for (let d of this.dataList) {
+                for (let d of this.data) {
                     mans.push({
                         name: d.PurchaseMan,
                         emplId: d.PurchaseManId
@@ -261,7 +268,7 @@
                             }
                             console.log(param)
                             console.log(data)
-                            that.dataList = data
+                            that.data = data
                             that.setChooseMan()
                         }, param)
                     }, { RoleName: "采购员" })
