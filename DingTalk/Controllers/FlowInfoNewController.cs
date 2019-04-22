@@ -1625,30 +1625,18 @@ namespace DingTalk.Controllers
         /// <summary>
         /// 移动端版本校对
         /// </summary>
-        /// <param name="VersionNumner">版本号</param>
         /// <returns></returns>
         [HttpGet]
         [Route("CheckVersion")]
-        public NewErrorModel CheckVersion(string VersionNumner)
+        public NewErrorModel CheckVersion()
         {
             try
             {
-                if (ConfigurationManager.AppSettings["VersionNumner"] == VersionNumner)
+                return new NewErrorModel()
                 {
-                    return new NewErrorModel()
-                    {
-                        data = true,
-                        error = new Error(0, "校对成功！", "") { },
-                    };
-                }
-                else
-                {
-                    return new NewErrorModel()
-                    {
-                        data = false,
-                        error = new Error(0, "校对失败！", "") { },
-                    };
-                }
+                    data = true,
+                    error = new Error(0, ConfigurationManager.AppSettings["VersionNumner"], "") { },
+                };
             }
             catch (Exception ex)
             {
