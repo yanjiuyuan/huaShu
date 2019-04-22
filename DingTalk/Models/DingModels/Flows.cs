@@ -36,5 +36,8 @@ namespace DingTalk.Models.DingModels
         public int? SORT_ID { get; set; }
 
         public bool? IsSupportMobile { get; set; }
+
+        [StringLength(200)]
+        public string ApproveUrl { get; set; }
     }
 }
