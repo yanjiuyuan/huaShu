@@ -1097,10 +1097,11 @@ namespace DingTalk.Controllers
         /// <param name="Index">(Index=0:待我审批 1:我已审批 2:我发起的 3:抄送我的)</param>
         /// <param name="ApplyManId">用户名Id</param>
         /// <param name="IsSupportMobile">是否是手机端调用接口(默认 false)</param>
+        /// <param name="Key">关键字模糊查询(流水号、标题、申请人、流程类型)</param>
         /// <returns> State 0 未完成 1 已完成 2 被退回</returns>
-        /// 测试数据： /FlowInfo/GetFlowStateDetail?Index=1&ApplyManId=083452125733424957
         [HttpGet]
-        public string GetFlowStateDetail(int Index, string ApplyManId, bool IsSupportMobile = false)
+        [Route("GetFlowStateDetail")]
+        public NewErrorModel GetFlowStateDetail(int Index, string ApplyManId, bool IsSupportMobile = false, string Key = "")
         {
             try
             {
@@ -1112,39 +1113,66 @@ namespace DingTalk.Controllers
                         case 0:
                             //待审批的
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId != 0 && u.IsSend == false && u.State == 0 && u.IsPost != true && u.ApplyTime == null).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
+
+                            return new NewErrorModel()
+                            {
+                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile, Key),
+                                error = new Error(0, "读取成功！", "") { },
+                            };
                         case 1:
                             //我已审批
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId != 0 && u.IsSend == false && u.State == 1 && u.IsPost != true && u.ApplyTime != null).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
+
+                            return new NewErrorModel()
+                            {
+                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile, Key),
+                                error = new Error(0, "读取成功！", "") { },
+                            };
                         case 2:
                             //我发起的
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId == 0 && u.IsSend == false && u.State == 1 && u.IsPost == true && u.ApplyTime != null).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
+                            return new NewErrorModel()
+                            {
+                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile, Key),
+                                error = new Error(0, "读取成功！", "") { },
+                            };
                         case 3:
                             //抄送我的
                             ListTasks = context.Tasks.Where(u => u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.NodeId != 0 && u.IsSend == true && u.IsPost != true).OrderByDescending(u => u.TaskId).Select(u => u.TaskId).ToList();
-                            return Quary(context, ListTasks, ApplyManId, IsSupportMobile);
-                        default:
-                            return JsonConvert.SerializeObject(new ErrorModel
+                            return new NewErrorModel()
                             {
-                                errorCode = 1,
-                                errorMessage = "参数不正确"
-                            });
+                                data = Quary(context, ListTasks, ApplyManId, IsSupportMobile, Key),
+                                error = new Error(0, "读取成功！", "") { },
+                            };
+                        default:
+                            return new NewErrorModel()
+                            {
+                                error = new Error(1, "参数不正确！", "") { },
+                            };
                     }
                 }
             }
             catch (Exception ex)
             {
-                return JsonConvert.SerializeObject(new ErrorModel
+                return new NewErrorModel()
                 {
-                    errorCode = 2,
-                    errorMessage = ex.Message
-                });
+                    error = new Error(2, ex.Message, "") { },
+                };
             }
         }
-
-        public string Quary(DDContext context, List<int?> ListTasks, string ApplyManId, bool IsMobile)
+        /// <summary>
+        /// 辅助查询
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="ListTasks"></param>
+        /// <param name="ApplyManId"></param>
+        /// <param name="IsMobile"></param>
+        /// <param name="Key"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("Quary")]
+        public object Quary(DDContext context, List<int?> ListTasks,
+            string ApplyManId, bool IsMobile, string Key)
         {
             FlowInfoServer flowInfoServer = new FlowInfoServer();
             List<object> listQuary = new List<object>();
@@ -1175,6 +1203,11 @@ namespace DingTalk.Controllers
                             on t.FlowId.ToString() equals f.FlowId.ToString()
                             where t.NodeId == 0 && t.TaskId == TaskId
                             && (IsMobile == true ? f.IsSupportMobile == true : 1 == 1)
+                            && ((Key != "" ? f.FlowName.Contains(Key) : 1 == 1) ||
+                                (Key != "" ? t.TaskId.ToString().Contains(Key) : 1 == 1) ||
+                                 (Key != "" ? t.Title.ToString().Contains(Key) : 1 == 1) ||
+                                (Key != "" ? t.ApplyMan.Contains(Key) : 1 == 1)
+                            )
                             select new
                             {
                                 Id = t.Id + 1,
@@ -1197,12 +1230,6 @@ namespace DingTalk.Controllers
                 }
             }
 
-            //foreach (var item in listQuary)
-            //{
-            //    string TaskId = item.GetType().GetProperty("TaskId").GetValue(item).ToString();
-
-            //}
-
             string strJson = JsonConvert.SerializeObject(listQuary);
             List<List<TaskFlowModel>> TaskFlowModelListList = JsonConvert.DeserializeObject<List<List<TaskFlowModel>>>(strJson);
             List<TaskFlowModel> TaskFlowModelList = new List<TaskFlowModel>();
@@ -1224,9 +1251,17 @@ namespace DingTalk.Controllers
                     }
                 }
             }
-            return JsonConvert.SerializeObject(TaskFlowModelListQuery);
+            return TaskFlowModelListQuery;
         }
 
+        /// <summary>
+        /// 获取流程状态
+        /// </summary>
+        /// <param name="TaskId"></param>
+        /// <param name="ListTask"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetTasksState")]
         public string GetTasksState(string TaskId, List<Tasks> ListTask)
         {
             List<Tasks> tasksListBack = ListTask.Where(t => t.TaskId.ToString() == TaskId && t.IsBacked == true).ToList();
