@@ -6,33 +6,35 @@
 <el-main id="partPage" style="position:relative;">
     <div class="head-fixed" onclick="goHome()">
         <i class="el-icon-arrow-left"></i>
-        零部件采购审批-{{nodeInfo.NodeName}}
+        办公用品采购审批-{{nodeInfo.NodeName}}
     </div>
+    <p style="font-size:24px;">总价预计 <span style="color:red;font-size:24px;">{{totalPrice}}</span>元</p>
     <el-collapse v-model="activeNames">
         <el-collapse-item v-for="(d,i) in dataList" :name="i+1" :key="i">
             <template slot="title">
-                <span style="font-size:16px;">标题:{{d.name}}</span>
-                <span style="font-size:16px;">申请人:{{d.name}}</span>
-                <span style="font-size:16px;">申请部门:{{d.name}}</span>
-                <span style="font-size:16px;">备注:{{d.name}}</span>
+                <span style="font-size:16px;">部门名称:{{d.name}},请购总价预计</span>
+                <span style="color:red;">{{d.tmpTotalPrice}}</span>元
             </template>
             <el-table :data="d.value" stripe border>
                 <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
                 <el-table-column prop="Name" label="物料名称"></el-table-column>
                 <el-table-column prop="Standard" label="规格型号"></el-table-column>
                 <el-table-column prop="Unit" label="单位"></el-table-column>
+                <el-table-column prop="Price" label="预计单价"></el-table-column>
                 <el-table-column prop="Count" label="数量"></el-table-column>
-                <el-table-column prop="applyMan" label="申请人"></el-table-column>
+                <el-table-column prop="totalPrice" label="总价"></el-table-column>
+                <el-table-column prop="Purpose" label="用途"></el-table-column>
+
+                @*<el-table-column prop="applyMan" label="申请人"></el-table-column>*@
                 @*<el-table-column prop="dept" label="部门"></el-table-column>*@
-                <el-table-column prop="Mark" label="备注"></el-table-column>
-                <el-table-column prop="ExpectPrice" label="参考单价"></el-table-column>
-                <el-table-column prop="Price" label="实际单价" v-if="NodeId == 2">
-                    <template slot-scope="scope">
-                        <el-input v-model="scope.row.Price"
-                                  :class="{ redborder:scope.row.Price == '' || scope.row.Price == null}"></el-input>
-                    </template>
-                </el-table-column>
-                <el-table-column prop="Price" label="实际单价" v-if="NodeId > 2"></el-table-column>
+                @*<el-table-column prop="Mark" label="备注"></el-table-column>*@
+                @*<el-table-column prop="Price" label="实际单价" v-if="NodeId == 2">
+                        <template slot-scope="scope">
+                            <el-input v-model="scope.row.Price"
+                                      :class="{ redborder:scope.row.Price == '' || scope.row.Price == null}"></el-input>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="Price" label="实际单价" v-if="NodeId > 2"></el-table-column>*@
             </el-table>
         </el-collapse-item>
     </el-collapse>
@@ -55,6 +57,11 @@
                 <el-button type="warning" v-on:click="rebackSubmit" :disabled="disablePage">撤回</el-button>
             </el-form-item>
         </template>
+        <template v-if="index!=0">
+            <el-form-item>
+                <el-button type="primary" v-on:click="printTable" :disabled="disablePage">打印表单</el-button>
+            </el-form-item>
+        </template>
     </el-form>
 </el-main>
 
@@ -64,6 +71,7 @@
         FlowId = UrlObj.flowid
         NodeId = UrlObj.nodeid
         TaskId = UrlObj.taskid
+        State = UrlObj.state
         Id = UrlObj.id
         var Index = UrlObj.index
     }
@@ -74,10 +82,12 @@
             return {
                 dataList: [],
                 NodeId: NodeId,
+                state: State,
                 activeNames: [1, 2, 3, 4, 5, 6],
                 index: Index,
                 nodeList: [],
                 nodeInfo: {},
+                totalPrice: 0,
                 ruleForm: {
                     Mark: ''
                 }
@@ -86,8 +96,12 @@
         methods: {
             onSubmit(formName) {
                 console.log('submit!')
+                this.aggreSubmit({
+                    "Id": allData.Id,
+                    "Remark": this.ruleForm.Mark
+                })
+                return
                 var that = this
-                let callBack = function () {}
                 if (NodeId == '2') {
                     for (let d of that.dataList) {
                         for (let v of d.value) {
@@ -129,6 +143,7 @@
             //撤回审批
             rebackSubmit() {
                 this.disablePage = true
+                var that = this
                 var param = {
                     "Id": allData.Id,
                     "NodeId": 0,
@@ -136,9 +151,16 @@
                 }
                 this.returnSubmit(param)
             },
+            //打印表单
+            printTable() {
+                this.PostData('OfficeSuppliesPurchase/PrintPDF', {
+                    UserId: DingData.userid,
+                    TaskId: TaskId
+                }, () => { this.elementAlert('提示信息', '获取成功，请在工作通知中查收') })
+            },
             getBomInfo() {
                 var that = this
-                this._getData("/Purchase/ReadPurchaseTable" , function (data) {
+                this._getData("/OfficeSuppliesPurchase/ReadTable", function (data) {
                     that.dataList = []
                     console.log('获取bom表')
                     console.log(data)
@@ -157,20 +179,21 @@
                         that.dataList.push({
                             name: d,
                             value: [],
-                            tmpTotalPrice: 0,
-                            totalPrice: 0
+                            tmpTotalPrice: 0
                         })
                     }
                     for (let d of data) {
                         for (let l of that.dataList) {
                             if (d.Dept == l.name) {
+                                d['totalPrice'] = (d.Price * d.Count)
                                 l.value.push(d)
-                                l.tmpTotalPrice = d.ExpectPrice
-                                l.totalPrice = d.Price
+                                l.tmpTotalPrice += (d.Price * d.Count)
+                                that.totalPrice += (d.Price * d.Count)
                                 break
                             }
                         }
                     }
+                    that.totalPrice = that.totalPrice.toFixed(2)
                 }, { TaskId: TaskId })
             }
         },
