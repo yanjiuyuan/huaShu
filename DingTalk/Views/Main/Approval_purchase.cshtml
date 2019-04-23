@@ -78,7 +78,7 @@
                 <el-button v-if="nodeInfo.IsBack" type="warning" v-on:click="returnBk" :disabled="disablePage">退回</el-button>
             </el-form-item>
         </template>
-        <template v-if="index==2 && state=='已撤回'">
+        <template v-if="index==2 && ( state=='已撤回' || state=='被退回') ">
             <el-form-item>
                 <el-button type="primary" v-on:click="reApproval" :disabled="disablePage">重新发起</el-button>
             </el-form-item>
@@ -133,14 +133,14 @@
                     let url = '/Purchase/ModifyPurchaseTable'
                     that._postData(url, function (data) {
                         that.aggreSubmit({
-                            "Id": that.tableInfo.Id,
+                            "Id": that.ruleForm.Id,
                             "Remark": that.ruleForm2.Mark
                         })
                     }, that.data)
                 }
                 else {
                     this.aggreSubmit({
-                        "Id": that.tableInfo.Id,
+                        "Id": that.ruleForm.Id,
                         "Remark": that.ruleForm2.Mark
                     })
                 }
@@ -158,6 +158,12 @@
             },
             setChooseMan() {
                 var that = this
+                if (this.nodeList && this.nodeList.length == 0) {
+                    setTimeout(function () {
+                        that.setChooseMan()
+                        return
+                    },100)
+                }
                 if (NodeId != 5) return
                 var mans = []
                 for (let d of this.data) {
@@ -293,7 +299,7 @@
                 console.log(url)
                 console.log(data)
                 allData = data
-                demo.tableInfo = data
+                demo.ruleForm = data
             },
             error: function (err) {
                 console.log(err);

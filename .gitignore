@@ -39,3 +39,7 @@ log/
 #Nuget packages folder
 
 packages/
+DingTalk/UploadFile/Excel/Templet/领料单20190304141318.xlsx
+*.xlsx
+*.zip
+*.pdf

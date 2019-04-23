@@ -13,7 +13,8 @@ var ReApprovalTempData = {} //重新发起审批保存的临时数据
 var imageList = []
 var fileList = []
 var pdfList = []
-let jinDomarn = 'http://1858o1s713.51mypc.cn:46389/api/'
+//let jinDomarn = 'http://1858o1s713.51mypc.cn:46389/api/'
+let jinDomarn = 'http://wuliao5222.55555.io:45578/api/'
 
 //原型方法
 Array.prototype.removeByValue = function (val) {
