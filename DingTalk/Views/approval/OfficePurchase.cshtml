@@ -23,25 +23,31 @@
         <el-button type="primary" v-on:click="searchCode">搜索</el-button>
     </div>
     <!--物料列表表格實體-->
+    <p style="font-size:24px;">总价预计  <span style="color:red;font-size:24px;">{{totalPrice}}</span>元</p>
     <el-collapse v-model="activeNames">
         <el-collapse-item v-for="(d,i) in dataList" :name="i+1" :key="i">
             <template slot="title">
-                <span style="font-size:20px;">部门名称:{{d.name}}</span>
+                <span style="font-size:20px;">部门名称:{{d.name}},请购总价预计</span>
+                <span style="color:red;">{{d.tmpTotalPrice}}</span>元
             </template>
             <el-table :data="d.value" stripe border>
                 <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
                 <el-table-column prop="Name" label="物料名称"></el-table-column>
                 <el-table-column prop="Standard" label="规格型号"></el-table-column>
                 <el-table-column prop="Unit" label="单位"></el-table-column>
-                <el-table-column prop="Price" label="实际单价"></el-table-column>
+                @*<el-table-column prop="Price" label="实际单价"></el-table-column>*@
                 <el-table-column prop="Count" label="数量"></el-table-column>
-                <el-table-column prop="applyMan" label="申请人"></el-table-column>
+                @*<el-table-column prop="applyMan" label="申请人"></el-table-column>*@
                 @*<el-table-column prop="dept" label="部门"></el-table-column>*@
-                <el-table-column prop="Mark" label="备注"></el-table-column>
-                <el-table-column prop="ExpectPrice" label="参考单价">
+                <el-table-column prop="Price" label="预计单价">
                     <template slot-scope="scope">
-                        <el-input v-model="scope.row.ExpectPrice"
-                                  :class="{ redborder:scope.row.ExpectPrice ==''}"></el-input>
+                        <el-input v-model="scope.row.Price" v-on:change="compute"
+                                  :class="{ redborder:scope.row.Price ==''}"></el-input>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="Purpose" label="用途">
+                    <template slot-scope="scope">
+                        <el-input v-model="scope.row.Purpose"></el-input>
                     </template>
                 </el-table-column>
             </el-table>
@@ -70,6 +76,7 @@
 
 <script>
     NodeId = '0'
+    var deptList = []
     var demo = new Vue({
         el: "#partPage",
         mixins: [mixin],
@@ -78,10 +85,11 @@
                 data: [],
                 dataList: [],
                 tableData: [],
-                searchDate:[],
+                searchDate: [],
                 preApprove: false,
                 nodeList: [],
                 nodeInfo: {},
+                totalPrice: 0,
                 searchForm: {
                     name: '',
                 },
@@ -108,8 +116,8 @@
                 }
                 for (let d of that.dataList) {
                     for (let v of d.value) {
-                        if (v.ExpectPrice == '') {
-                            this.elementAlert('提示信息', '有预计单价未填')
+                        if (v.Price == '') {
+                            this.elementAlert('提示信息', '有单价未填')
                             return
                         }
                     }
@@ -153,7 +161,6 @@
                         console.log(data)
                         that.data = data
                         that.dataList = []
-                        var deptList = []
                         var deptStr = ''
                         for (let d of data) {
                             if (d.dept && deptStr.indexOf(d.dept) < 0) {
@@ -162,26 +169,45 @@
                         }
                         deptStr = deptStr.substring(0, deptStr.length - 1)
                         deptList = deptStr.split(',')
-                        console.log(deptList)
+                        that.totalPrice = 0
                         for (let d of deptList) {
                             that.dataList.push({
                                 name: d,
-                                value: []
+                                value: [],
+                                tmpTotalPrice: 0
                             })
                         }
                         for (let d of data) {
                             for (let l of that.dataList) {
                                 if (d.dept == l.name) {
+                                    d.Price = d.ExpectPrice
                                     l.value.push(d)
+                                    l.tmpTotalPrice += (d.Price * d.Count)
+                                    that.totalPrice += (d.Price * d.Count)
                                     break
                                 }
                             }
                         }
-
+                        that.totalPrice = that.totalPrice.toFixed(2)
                         that.totalRows = data.length
                         that.getData()
                     }
                 })
+            },
+            compute() {
+                this.totalPrice = 0
+                for (let l of this.dataList) {
+                    l.tmpTotalPrice = 0
+                }
+                for (let l of this.dataList) {
+                    for (let v of l.value) {
+                        if (!v.Price) continue
+                        let price = parseFloat(v.Price).toFixed(2)
+                        if (!price) price == 0
+                        l.tmpTotalPrice += price * v.Count
+                        this.totalPrice += price * v.Count
+                    }
+                }
             }
         },
         created: function () {
