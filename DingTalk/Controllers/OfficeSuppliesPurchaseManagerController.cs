@@ -279,7 +279,7 @@ namespace DingTalk.Controllers
 
                     foreach (var item in OfficeSuppliesPurchaseList)
                     {
-                        sum += float.Parse(item.Price);
+                        sum += (float.Parse(item.Price) * float.Parse(item.Count));
                     }
                     Dictionary<string, string> keyValuePairs = new Dictionary<string, string>();
                     keyValuePairs.Add("总价", sum.ToString());
