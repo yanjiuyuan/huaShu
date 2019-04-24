@@ -285,7 +285,7 @@ namespace DingTalk.Controllers
                     keyValuePairs.Add("总价", sum.ToString());
 
                     string path = pdfHelper.GeneratePDF(FlowName, TaskId, tasks.ApplyMan, tasks.Dept, tasks.ApplyTime,
-                    null, null, "2", 300, 650, contentList, contentWithList, dtSourse, dtApproveView, null, null);
+                    null, null, "2", 300, 650, contentList, contentWithList, dtSourse, dtApproveView, null, keyValuePairs);
                     string RelativePath = "~/UploadFile/PDF/" + Path.GetFileName(path);
 
                     List<string> newPaths = new List<string>();
