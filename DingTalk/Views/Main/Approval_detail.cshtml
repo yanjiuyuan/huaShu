@@ -429,30 +429,14 @@
             //提交审批
             onSubmit(formName) {
                 this.disablePage = true
-                var that = this
-                if (FlowId == '1') {
-                    let url = '/OfficeSupplies/ModifyTable'
-                    console.log(this.data)
-                    that._postData(url, function (data) {
-                        that.aggreSubmit({
-                            "Id": allData.Id,
-                            "Remark": that.ruleForm.mark,
-                            "Title": that.ruleForm.Title,
-                            "ProjectId": that.ruleForm.ProjectId
-                        }, {
-                                "ProjectId": that.ruleForm.ProjectId
-                            })
-                    }, that.data)
-                } else {
-                    this.aggreSubmit({
-                        "Id": allData.Id,
-                        "Remark": this.ruleForm.mark,
-                        "Title": this.ruleForm.Title,
+                this.aggreSubmit({
+                    "Id": allData.Id,
+                    "Remark": this.ruleForm.mark,
+                    "Title": this.ruleForm.Title,
+                    "ProjectId": this.ruleForm.ProjectId
+                }, {
                         "ProjectId": this.ruleForm.ProjectId
-                    }, {
-                            "ProjectId": this.ruleForm.ProjectId
-                        })
-                }
+                    })
             },
             //退回审批
             reSubmit() {
@@ -597,6 +581,13 @@
 
             //获取bom表信息
             getBomInfo() {
+                if (FlowId == 1) {
+                    this.GetData(bomUrl, (res) => {
+                        this.data = res
+                        this.getData()
+                    })
+                    return
+                }
                 var that = this
                 $.ajax({
                     url: bomUrl,
