@@ -160,7 +160,6 @@
                         return
                     }
                 }
-
                 var that = this
                 let url = '/OfficeSupplies/SaveTable'
                 let callBack = function (taskId) {
@@ -170,15 +169,14 @@
                         p.TaskId = taskId
                         param.push(p)
                     }
-                    console.log(JSON.stringify(param))
-                    that._postData(url, function (data) {
+                    that.PostData(url, param, () => {
                         that.$alert('恭喜提交成功', '提示信息', {
                             confirmButtonText: '确定',
                             callback: action => {
                                 goHome()
                             }
                         })
-                    }, param)
+                    })
                 }
                 that.approvalSubmit(formName, {
                     Title: that.ruleForm.Title,
