@@ -317,6 +317,7 @@ var mixin = {
                 members: []
             }
         ],
+        ruleForm: {},
         specialRoleNames: [],
         preApprove: true,
         isBack: false,
@@ -1068,6 +1069,7 @@ var mixin = {
         GetDingList(taskId) {
             var that = this
             this._getData('/DingTalkServers/Ding', function (res) {
+                if(!res) return
                 let applyManId = res.data.ApplyManId
                 if (applyManId) {
                     that.dingList.push(applyManId)
