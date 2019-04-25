@@ -40,3 +40,7 @@ _ReSharper*/
 packages/
 /DingTalk/Web.config
 /DingTalk/Web.config
+DingTalk/Web.config
+*.config
+DingTalk/Web.config
+DingTalk/Web.config
