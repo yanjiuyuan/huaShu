@@ -130,8 +130,9 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [Route("QuaryByTaskId")]
         [HttpGet]
-        public object QuaryByTaskId(string taskId)
+        public NewErrorModel QuaryByTaskId(string taskId)
         {
+
             try
             {
                 EFHelper<PurchaseOrder> eFHelper = new EFHelper<PurchaseOrder>();
