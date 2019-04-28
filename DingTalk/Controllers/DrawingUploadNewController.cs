@@ -3,6 +3,7 @@ using Common.DTChange;
 using Common.Excel;
 using Common.Ionic;
 using Common.PDF;
+using DingTalk.EF;
 using DingTalk.Models;
 using DingTalk.Models.DingModels;
 using Newtonsoft.Json;
@@ -303,5 +304,39 @@ namespace DingTalk.Controllers
                 };
             }
         }
+
+        /// <summary>
+        /// 修改BOM表
+        /// </summary>
+        /// <param name="listPurchase"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ChangeBom")]
+        public NewErrorModel ChangeBom([FromBody]List<Purchase> listPurchase)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    EFHelper<Purchase> eFHelper = new EFHelper<Purchase>();
+                    eFHelper.DelBy(t => t.Id.ToString() == listPurchase[0].TaskId.ToString());
+                    context.Purchase.AddRange(listPurchase);
+                    context.SaveChanges();
+                    return new NewErrorModel()
+                    {
+                        error = new Error(0, "更新成功！", "") { },
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(2, ex.Message, "") { },
+                };
+            }
+
+        }
+
     }
 }
