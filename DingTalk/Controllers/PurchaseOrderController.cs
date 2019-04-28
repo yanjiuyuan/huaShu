@@ -30,11 +30,11 @@ namespace DingTalk.Controllers
             {
                 DDContext context = new DDContext();
                 List<object> list = new List<object>();
-                List<Tasks> tasksList = FlowInfoServer.ReturnUnFinishedTaskId("6").Where(t=>t.NodeId==0).ToList();
+                List<Tasks> tasksList = FlowInfoServer.ReturnUnFinishedTaskId("6").Where(t => t.NodeId == 0).ToList();
 
                 var quaryList = context.Tasks.Where(t => (t.TaskId.ToString().Contains(key)
                   || t.ProjectName.Contains(key) || t.Title.Contains(key)
-                    || t.ApplyMan.Contains(key)) && t.NodeId == 0 && t.FlowId == 6).OrderBy(t=>t.TaskId).Select(t => new TasksPurcahse
+                    || t.ApplyMan.Contains(key)) && t.NodeId == 0 && t.FlowId == 6).OrderBy(t => t.TaskId).Select(t => new TasksPurcahse
                     {
                         Id = t.Id,
                         TaskId = t.TaskId,
@@ -130,8 +130,9 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [Route("QuaryByTaskId")]
         [HttpGet]
-        public object QuaryByTaskId(string taskId)
+        public NewErrorModel QuaryByTaskId(string taskId)
         {
+
             try
             {
                 EFHelper<PurchaseOrder> eFHelper = new EFHelper<PurchaseOrder>();
