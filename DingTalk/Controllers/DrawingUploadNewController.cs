@@ -318,8 +318,11 @@ namespace DingTalk.Controllers
             {
                 using (DDContext context = new DDContext())
                 {
-                    EFHelper<Purchase> eFHelper = new EFHelper<Purchase>();
-                    eFHelper.DelBy(t => t.Id.ToString() == listPurchase[0].TaskId.ToString());
+                    string TaskId = listPurchase[0].TaskId.ToString();
+                    List<Purchase> purchases = context.Purchase.Where(t => t.TaskId == TaskId).ToList();
+
+                    context.Purchase.RemoveRange(purchases);
+                    context.SaveChanges();
                     context.Purchase.AddRange(listPurchase);
                     context.SaveChanges();
                     return new NewErrorModel()
