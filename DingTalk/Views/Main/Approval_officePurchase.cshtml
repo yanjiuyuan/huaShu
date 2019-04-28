@@ -8,43 +8,45 @@
         <i class="el-icon-arrow-left"></i>
         办公用品采购审批-{{nodeInfo.NodeName}}
     </div>
-    <p style="font-size:24px;">总价预计 <span style="color:red;font-size:24px;">{{totalPrice}}</span>元</p>
-    <el-collapse v-model="activeNames">
-        <el-collapse-item v-for="(d,i) in dataList" :name="i+1" :key="i">
-            <template slot="title">
-                <span style="font-size:16px;">部门名称:{{d.name}},请购总价预计</span>
-                <span style="color:red;">{{d.tmpTotalPrice}}</span>元
-            </template>
-            <el-table :data="d.value" stripe border>
-                <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
-                <el-table-column prop="Name" label="物料名称"></el-table-column>
-                <el-table-column prop="Standard" label="规格型号"></el-table-column>
-                <el-table-column prop="Unit" label="单位"></el-table-column>
-                <el-table-column prop="Price" label="预计单价"></el-table-column>
-                <el-table-column prop="Count" label="数量"></el-table-column>
-                <el-table-column prop="totalPrice" label="总价"></el-table-column>
-                <el-table-column prop="Purpose" label="用途"></el-table-column>
 
-                @*<el-table-column prop="applyMan" label="申请人"></el-table-column>*@
-                @*<el-table-column prop="dept" label="部门"></el-table-column>*@
-                @*<el-table-column prop="Mark" label="备注"></el-table-column>*@
-                @*<el-table-column prop="Price" label="实际单价" v-if="NodeId == 2">
-                        <template slot-scope="scope">
-                            <el-input v-model="scope.row.Price"
-                                      :class="{ redborder:scope.row.Price == '' || scope.row.Price == null}"></el-input>
-                        </template>
-                    </el-table-column>
-                    <el-table-column prop="Price" label="实际单价" v-if="NodeId > 2"></el-table-column>*@
-            </el-table>
-        </el-collapse-item>
-    </el-collapse>
 
-    <el-form :model="ruleForm" :rules="rules" :inline="true" ref="ruleForm" label-width="120px" class="demo-ruleForm">
+    <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="120px" class="demo-ruleForm">
+        <el-form-item label="标题">
+            <el-input v-model="ruleForm.Title" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="申请人">
+            <el-input v-model="ruleForm.ApplyMan" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="备注">
+            <el-input v-model="ruleForm.Remark" :disabled="true"></el-input>
+        </el-form-item>
+
+        <p style="font-size:24px;">总价预计 <span style="color:red;font-size:24px;">{{totalPrice}}</span>元</p>
+        <el-collapse v-model="activeNames">
+            <el-collapse-item v-for="(d,i) in dataList" :name="i+1" :key="i">
+                <template slot="title">
+                    <span style="font-size:16px;">部门名称:{{d.name}},请购总价预计</span>
+                    <span style="color:red;">{{d.tmpTotalPrice}}</span>元
+                </template>
+                <el-table :data="d.value" stripe border>
+                    <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
+                    <el-table-column prop="Name" label="物料名称"></el-table-column>
+                    <el-table-column prop="Standard" label="规格型号"></el-table-column>
+                    <el-table-column prop="Unit" label="单位"></el-table-column>
+                    <el-table-column prop="Price" label="预计单价"></el-table-column>
+                    <el-table-column prop="Count" label="数量"></el-table-column>
+                    <el-table-column prop="totalPrice" label="总价"></el-table-column>
+                    <el-table-column prop="Purpose" label="用途"></el-table-column>
+                </el-table>
+            </el-collapse-item>
+        </el-collapse>
+    </el-form>
+    <el-form :model="ruleForm2" :rules="rules" :inline="true" ref="ruleForm" label-width="120px" class="demo-ruleForm">
         <!--添加审批人-->
         <sam-approver-list :nodeList="nodeList" :single="true" :nodedata="nodeInfo"></sam-approver-list>
         <template v-if="index==0">
             <el-form-item label="审批意见" prop="mark">
-                <el-input v-model="ruleForm.Mark" style="width:400px;"></el-input>
+                <el-input v-model="ruleForm2.Mark" style="width:400px;"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" v-on:click="onSubmit" :disabled="disablePage">同意</el-button>
@@ -81,6 +83,7 @@
         data: function () {
             return {
                 dataList: [],
+                ruleForm: {},
                 NodeId: NodeId,
                 state: State,
                 activeNames: [1, 2, 3, 4, 5, 6],
@@ -88,7 +91,7 @@
                 nodeList: [],
                 nodeInfo: {},
                 totalPrice: 0,
-                ruleForm: {
+                ruleForm2: {
                     Mark: ''
                 }
             }
@@ -98,7 +101,7 @@
                 console.log('submit!')
                 this.aggreSubmit({
                     "Id": allData.Id,
-                    "Remark": this.ruleForm.Mark
+                    "Remark": this.ruleForm2.Mark
                 })
                 return
                 var that = this
@@ -122,21 +125,21 @@
                     that._postData(url, function (data) {
                         that.aggreSubmit({
                             "Id": allData.Id,
-                            "Remark": that.ruleForm.Mark
+                            "Remark": that.ruleForm2.Mark
                         })
                     }, param)
                 }
                 else {
                     this.aggreSubmit({
                         "Id": allData.Id,
-                        "Remark": this.ruleForm.Mark
+                        "Remark": this.ruleForm2.Mark
                     })
                 }
             },
             returnBk() {
                 let param = {
                     "Id": allData.Id,
-                    "Remark": this.ruleForm.Mark
+                    "Remark": this.ruleForm2.Mark
                 }
                 this.returnSubmit(param)
             },
@@ -147,7 +150,7 @@
                 var param = {
                     "Id": allData.Id,
                     "NodeId": 0,
-                    "Remark": this.ruleForm.mark
+                    "Remark": this.ruleForm2.mark
                 }
                 this.returnSubmit(param)
             },
@@ -185,15 +188,14 @@
                     for (let d of data) {
                         for (let l of that.dataList) {
                             if (d.Dept == l.name) {
-                                d['totalPrice'] = (d.Price * d.Count)
+                                d['totalPrice'] = parseInt(d.Price * d.Count)
                                 l.value.push(d)
-                                l.tmpTotalPrice += (d.Price * d.Count)
-                                that.totalPrice += (d.Price * d.Count)
+                                l.tmpTotalPrice += parseInt(d.Price * d.Count)
+                                that.totalPrice += parseInt(d.Price * d.Count)
                                 break
                             }
                         }
                     }
-                    that.totalPrice = that.totalPrice.toFixed(2)
                 }, { TaskId: TaskId })
             }
         },
@@ -220,6 +222,7 @@
                 console.log(url)
                 console.log(data)
                 allData = data
+                demo.ruleForm = data
             },
             error: function (err) {
                 console.log(err);

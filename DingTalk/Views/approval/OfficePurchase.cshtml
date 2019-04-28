@@ -37,12 +37,10 @@
                 <el-table-column prop="Unit" label="单位"></el-table-column>
                 @*<el-table-column prop="Price" label="实际单价"></el-table-column>*@
                 <el-table-column prop="Count" label="数量"></el-table-column>
-                @*<el-table-column prop="applyMan" label="申请人"></el-table-column>*@
-                @*<el-table-column prop="dept" label="部门"></el-table-column>*@
                 <el-table-column prop="Price" label="预计单价">
                     <template slot-scope="scope">
                         <el-input v-model="scope.row.Price" v-on:change="compute"
-                                  :class="{ redborder:scope.row.Price ==''}"></el-input>
+                                  :class="{ redborder:scope.row.Price =='' || scope.row.Price == null}"></el-input>
                     </template>
                 </el-table-column>
                 <el-table-column prop="Purpose" label="用途">
@@ -116,7 +114,7 @@
                 }
                 for (let d of that.dataList) {
                     for (let v of d.value) {
-                        if (v.Price == '') {
+                        if (v.Price == '' || v.Price == null) {
                             this.elementAlert('提示信息', '有单价未填')
                             return
                         }
@@ -182,13 +180,12 @@
                                 if (d.dept == l.name) {
                                     d.Price = d.ExpectPrice
                                     l.value.push(d)
-                                    l.tmpTotalPrice += (d.Price * d.Count)
-                                    that.totalPrice += (d.Price * d.Count)
+                                    l.tmpTotalPrice += parseInt(d.Price * d.Count)
+                                    that.totalPrice += parseInt(d.Price * d.Count)
                                     break
                                 }
                             }
                         }
-                        that.totalPrice = that.totalPrice.toFixed(2)
                         that.totalRows = data.length
                         that.getData()
                     }
