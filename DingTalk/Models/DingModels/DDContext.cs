@@ -57,6 +57,8 @@ namespace DingTalk.Models.DingModels
         public virtual DbSet<Pick> Pick { get; set; }
 
         public virtual DbSet<GoDown> GoDown { get; set; }
+
+        public virtual DbSet<CreateProject> CreateProject { get; set; }
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Approve>()
