@@ -127,7 +127,7 @@ namespace DingTalk.Controllers
             {
                 string TaskId = printAndSendModel.TaskId;
                 string UserId = printAndSendModel.UserId;
-                PDFHelper pdfHelper = new PDFHelper();
+                PDFHelperNew pdfHelper = new PDFHelperNew();
                 using (DDContext context = new DDContext())
                 {
                     //获取表单信息
