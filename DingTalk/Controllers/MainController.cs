@@ -82,7 +82,10 @@ namespace WebZhongZhi.Controllers
         {
             return View();
         }
-
+        public ActionResult Approval_createProject()
+        {
+            return View();
+        }
         //零部件采购审批页面
         public ActionResult Approval_purchase()
         {

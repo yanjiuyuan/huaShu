@@ -721,6 +721,8 @@
     <Content Include="Views\approval\IntoStorage.cshtml" />
     <Content Include="Views\Main\Approval_picking.cshtml" />
     <Content Include="Views\Main\Approval_intoStorage.cshtml" />
+    <Content Include="Views\approval\CreateProject.cshtml" />
+    <Content Include="Views\Main\Approval_createProject.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -97,7 +97,10 @@ namespace WebZhongZhi.Controllers
         {
             return View();
         }
-
+        public ActionResult CreateProject()
+        {
+            return View();
+        }
         /// <summary>
         /// 零部件采购视图(新)
         /// </summary>
