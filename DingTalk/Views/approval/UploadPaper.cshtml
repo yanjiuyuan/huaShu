@@ -372,6 +372,7 @@
                             this.dataArr[this.bomIndex].data.push(data)
                             this.data.push(data)
                             upBom.push({
+                                //TaskId: 196,//11111
                                 BomId: BomId,
                                 DrawingNo: data.Column1,
                                 Name: data.Column2,
@@ -387,7 +388,12 @@
                         }
                     }
                 }
-                console.log(tableData)
+                //this.PostData('DrawingUploadNew/ChangeBom', upBom, (res) => {
+                    
+                //})
+                //console.log('~~~~~~')
+                //console.log(upBom)
+                //return
                 //this.totalRows = this.data.length
                 this.dataArr[this.bomIndex].totalRows = this.dataArr[this.bomIndex].data.length
                 this.getData()
