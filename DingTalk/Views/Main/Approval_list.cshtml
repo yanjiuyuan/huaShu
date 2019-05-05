@@ -165,6 +165,10 @@
                         loadPage('/Main/approval_intoStorage' + _formatQueryStr(param))
                         return
                     }
+                    if (row.FlowId == 31) {
+                        loadPage('/Main/approval_createProject' + _formatQueryStr(param))
+                        return
+                    }
                     loadPage('/Main/approval_detail' + _formatQueryStr(param))
                 }
             },
