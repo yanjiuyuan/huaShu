@@ -181,7 +181,7 @@ namespace DingTalk.Controllers
         }
 
         /// <summary>
-        /// 拷贝文件到研究院项目下
+        /// 拷贝文件到华数项目下
         /// </summary>
         /// <param name="picPath">文件路径</param>
         /// <returns></returns>

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -24,6 +25,7 @@ namespace DingTalk.Controllers
     [RoutePrefix("FlowInfoNew")]
     public class FlowInfoNewController : ApiController
     {
+
         #region 流程创建与提交、退回
 
         /// <summary>
@@ -60,7 +62,7 @@ namespace DingTalk.Controllers
                         {
                             tasks.State = 0; tasks.IsEnable = 1;
                             //抄送推送
-                            SentCommonMsg(tasks.ApplyManId.ToString(), string.Format("您有一条抄送的流程(流水号:{0})，请及时登入研究院信息管理系统进行审批。", TaskId), taskList[0].ApplyMan, taskList[0].Remark, null);
+                            SentCommonMsg(tasks.ApplyManId.ToString(), string.Format("您有一条抄送的流程(流水号:{0})，请及时登入华数信息管理系统进行审批。", TaskId), taskList[0].ApplyMan, taskList[0].Remark, null);
                         }
                         else
                         {
@@ -251,7 +253,7 @@ namespace DingTalk.Controllers
                                         false, false);
                                     Thread.Sleep(500);
                                     //推送OA消息
-                                    //SentCommonMsg(tasksChoosed.ApplyManId.ToString(), string.Format("您有一条待审批的流程(流水号:{0})，请及时登入研究院信息管理系统进行审批。", TaskId), tasksApplyMan.ApplyMan, tasksApplyMan.Remark, null);
+                                    //SentCommonMsg(tasksChoosed.ApplyManId.ToString(), string.Format("您有一条待审批的流程(流水号:{0})，请及时登入华数信息管理系统进行审批。", TaskId), tasksApplyMan.ApplyMan, tasksApplyMan.Remark, null);
 
                                     return new NewErrorModel()
                                     {
@@ -318,7 +320,7 @@ namespace DingTalk.Controllers
 
                                     //推送抄送消息
                                     //SentCommonMsg(task.ApplyManId,
-                                    //string.Format("您有一条抄送信息(流水号:{0})，请及时登入研究院信息管理系统进行查阅。", task.TaskId),
+                                    //string.Format("您有一条抄送信息(流水号:{0})，请及时登入华数信息管理系统进行查阅。", task.TaskId),
                                     //taskNew.ApplyMan, taskNew.Remark, null);
                                     task.IsEnable = 1;
                                     task.State = 0;
@@ -466,7 +468,7 @@ namespace DingTalk.Controllers
                                 {
                                     //推送OA消息(寻人)
                                     //SentCommonMsg(dic["PeopleId"].ToString(),
-                                    //string.Format("您有一条待审批的流程(流水号:{0})，请及时登入研究院信息管理系统进行审批。", tasks.TaskId),
+                                    //string.Format("您有一条待审批的流程(流水号:{0})，请及时登入华数信息管理系统进行审批。", tasks.TaskId),
                                     //taskNew.ApplyMan, taskNew.Remark, null);
 
                                     await SendOaMsgNew(tasks.FlowId, dic["PeopleId"].ToString(), tasks.TaskId.ToString(),
@@ -492,7 +494,7 @@ namespace DingTalk.Controllers
                                                 false, false);
                                             Thread.Sleep(200);
                                             //     SentCommonMsg(PeopleId,
-                                            //string.Format("您有一条待审批的流程(流水号:{0})，请及时登入研究院信息管理系统进行审批。", tasks.TaskId),
+                                            //string.Format("您有一条待审批的流程(流水号:{0})，请及时登入华数信息管理系统进行审批。", tasks.TaskId),
                                             //taskNew.ApplyMan, taskNew.Remark, null);
                                         }
                                         i++;
@@ -740,6 +742,13 @@ namespace DingTalk.Controllers
                 dic.Add("NodeName", NodeName);
                 if (NodeName == "结束")
                 {
+                    //修改流程状态
+                    TasksState tasksState = context.TasksState.
+                    Where(t => t.TaskId == OldTaskId.ToString()).FirstOrDefault();
+                    tasksState.State = "已完成";
+                    context.Entry<TasksState>(tasksState).State = EntityState.Modified;
+                    context.SaveChanges();
+
                     return dic;
                 }
                 string PeopleId = context.NodeInfo.SingleOrDefault(u => u.FlowId == FlowId && u.NodeId.ToString() == FindNodeId).PeopleId;
@@ -750,47 +759,61 @@ namespace DingTalk.Controllers
                 dic.Add("NodePeople", NodePeople);
                 dic.Add("PeopleId", PeopleId);
 
-                if (NodeName == "抄送")
+                if (NodeName.Contains("抄送"))
                 {
-                    string[] ListNodeName = NodeName.Split(',');
-                    string[] ListPeopleId = PeopleId.Split(',');
-                    string[] ListNodePeople = NodePeople.Split(',');
-
-                    Tasks Task = context.Tasks.Where(u => u.TaskId == OldTaskId).First();
-                    for (int i = 0; i < ListPeopleId.Length; i++)
+                    if (!string.IsNullOrEmpty(PeopleId))
                     {
-                        //保存任务流
-                        Tasks newTask = new Tasks()
+                        string[] ListNodeName = NodeName.Split(',');
+                        string[] ListPeopleId = PeopleId.Split(',');
+                        string[] ListNodePeople = NodePeople.Split(',');
+
+                        Tasks Task = context.Tasks.Where(u => u.TaskId == OldTaskId).First();
+                        for (int i = 0; i < ListPeopleId.Length; i++)
                         {
-                            TaskId = OldTaskId,
-                            ApplyMan = ListNodePeople[i],
-                            IsEnable = 1,
-                            NodeId = NodeId + 1,
-                            FlowId = Int32.Parse(FlowId),
-                            IsSend = true,
-                            ApplyManId = ListPeopleId[i],
-                            State = 0, //0 表示未审核 1表示已审核
-                            FileUrl = Task.FileUrl,
-                            OldFileUrl = Task.OldFileUrl,
-                            ImageUrl = Task.ImageUrl,
-                            OldImageUrl = Task.OldImageUrl,
-                            Title = Task.Title,
-                            IsPost = false,
-                            ProjectId = Task.ProjectId,
-                        };
+                            //保存任务流
+                            Tasks newTask = new Tasks()
+                            {
+                                TaskId = OldTaskId,
+                                ApplyMan = ListNodePeople[i],
+                                IsEnable = 1,
+                                NodeId = NodeId + 1,
+                                FlowId = Int32.Parse(FlowId),
+                                IsSend = true,
+                                ApplyManId = ListPeopleId[i],
+                                State = 0, //0 表示未审核 1表示已审核
+                                FileUrl = Task.FileUrl,
+                                OldFileUrl = Task.OldFileUrl,
+                                ImageUrl = Task.ImageUrl,
+                                OldImageUrl = Task.OldImageUrl,
+                                Title = Task.Title,
+                                IsPost = false,
+                                ProjectId = Task.ProjectId,
+                            };
 
-                        //推送抄送消息
-                        SentCommonMsg(ListPeopleId[i],
-                        string.Format("您有一条抄送信息(流水号:{0})，请及时登入研究院信息管理系统进行查阅。", Task.TaskId),
-                        Task.ApplyMan, Task.Remark, null);
+                            //推送抄送消息
+                            SentCommonMsg(ListPeopleId[i],
+                            string.Format("您有一条抄送信息(流水号:{0})，请及时登入华数信息管理系统进行查阅。", Task.TaskId),
+                            Task.ApplyMan, Task.Remark, null);
 
-                        context.Tasks.Add(newTask);
-                        context.SaveChanges();
+                            context.Tasks.Add(newTask);
+                            context.SaveChanges();
+                        }
                     }
+
+
+
                     if (IsSend == true)
                     {
+                        if (!string.IsNullOrEmpty(PeopleId))
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            return FindNextPeople(FlowId, ApplyManId, true, false, OldTaskId, NodeId + 1);
+                        }
                         //return FindNextPeople(FlowId, ApplyManId, true, false, OldTaskId, NodeId + 2);
-                        return null;
+
                     }
                     else
                     {
@@ -831,7 +854,7 @@ namespace DingTalk.Controllers
                             //推送抄送消息
                             Tasks Task = context.Tasks.Where(u => u.TaskId == OldTaskId).First();
                             SentCommonMsg(task.ApplyManId,
-                            string.Format("您有一条抄送信息(流水号:{0})，请及时登入研究院信息管理系统进行查阅。", Task.TaskId),
+                            string.Format("您有一条抄送信息(流水号:{0})，请及时登入华数信息管理系统进行查阅。", Task.TaskId),
                             Task.ApplyMan, Task.Remark, null);
                         }
                         return FindNextPeople(FlowId, ApplyManId, true, false, OldTaskId, NodeId + 1);
@@ -1156,9 +1179,9 @@ namespace DingTalk.Controllers
         /// </summary>
         /// <param name="ApplyManId">用户名Id</param>
         /// <returns>返回待审批的、我发起的、抄送我的数量</returns>
-        /// 测试数据 /FlowInfo/GetFlowStateCounts?ApplyManId=123456
         [HttpGet]
-        public string GetFlowStateCounts(string ApplyManId)
+        [Route("GetFlowStateCounts")]
+        public NewErrorModel GetFlowStateCounts(string ApplyManId)
         {
             try
             {
@@ -1175,20 +1198,21 @@ namespace DingTalk.Controllers
                     dic.Add("MyPostCount", iMyPost);
                     dic.Add("SendMyCount", iSendMy);
 
-                    return JsonConvert.SerializeObject(dic);
+                    return new NewErrorModel()
+                    {
+                        data = dic,
+                        error = new Error(0, "读取成功！", "") { },
+                    };
                 }
             }
             catch (Exception ex)
             {
-                return JsonConvert.SerializeObject(new ErrorModel
+                return new NewErrorModel()
                 {
-                    errorCode = 1,
-                    errorMessage = ex.Message
-                });
+                    error = new Error(2, ex.Message, "") { },
+                };
             }
         }
-
-
 
         /// <summary>
         /// 左侧审批状态详细数据读取
@@ -1200,7 +1224,10 @@ namespace DingTalk.Controllers
         /// <returns> State 0 未完成 1 已完成 2 被退回</returns>
         [HttpGet]
         [Route("GetFlowStateDetail")]
-        public NewErrorModel GetFlowStateDetail(int Index, string ApplyManId, bool IsSupportMobile = false, string Key = "")
+        public NewErrorModel GetFlowStateDetail(int Index,
+            string ApplyManId, bool IsSupportMobile = false,
+
+            string Key = "")
         {
             try
             {
@@ -1259,6 +1286,36 @@ namespace DingTalk.Controllers
                 };
             }
         }
+
+        /// <summary>
+        /// 获取流程状态(单条)
+        /// </summary>
+        /// <param name="TaskId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetFlowStateSingle")]
+        public NewErrorModel GetFlowStateSingle(string TaskId)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    return new NewErrorModel()
+                    {
+                        data = context.TasksState.Where(t => t.TaskId == TaskId).FirstOrDefault(),
+                        error = new Error(0, "获取流程状态成功！", "") { },
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(2, ex.Message, "") { },
+                };
+            }
+        }
+
         /// <summary>
         /// 辅助查询
         /// </summary>
@@ -1276,8 +1333,14 @@ namespace DingTalk.Controllers
             FlowInfoServer flowInfoServer = new FlowInfoServer();
             List<object> listQuary = new List<object>();
             List<object> listQuaryPro = new List<object>();
-            List<Tasks> ListTask = context.Tasks.ToList();
+            //List<Tasks> ListTask = context.Tasks.ToList();
+
+            List<Tasks> ListTask = context.Tasks.SqlQuery("select * from tasks where taskid in " +
+                "(select TaskId from tasks where ApplyManId = @applyManId)", new SqlParameter("@applyManId", ApplyManId)).ToList();
+
+
             List<Flows> ListFlows = context.Flows.ToList();
+            List<TasksState> ListTasksState = context.TasksState.ToList();
             foreach (int TaskId in ListTasks)
             {
                 int StateCount = ListTask.Where(t => t.TaskId.ToString() == TaskId.ToString() && t.State == 0 && t.IsSend != true).Count();
@@ -1300,6 +1363,8 @@ namespace DingTalk.Controllers
                 var query = from t in ListTask
                             join f in ListFlows
                             on t.FlowId.ToString() equals f.FlowId.ToString()
+                            join ts in ListTasksState
+                            on t.TaskId.ToString() equals ts.TaskId
                             where t.NodeId == 0 && t.TaskId == TaskId
                             && (IsMobile == true ? f.IsSupportMobile == true : 1 == 1)
                             && ((Key != "" ? f.FlowName.Contains(Key) : 1 == 1) ||
@@ -1313,13 +1378,13 @@ namespace DingTalk.Controllers
                                 TaskId = t.TaskId,
                                 NodeId = NodeId,
                                 FlowId = t.FlowId,
-                                FlowName = f.FlowName,
                                 ApplyMan = t.ApplyMan,
                                 ApplyManId = t.ApplyManId,
                                 ApplyTime = t.ApplyTime,
                                 Title = t.Title,
-                                State = GetTasksState(t.TaskId.ToString(), ListTask),
+                                State = ts.State,
                                 IsBack = t.IsBacked,
+                                FlowName = f.FlowName,
                                 IsSupportMobile = f.IsSupportMobile
                             };
 
@@ -1352,7 +1417,6 @@ namespace DingTalk.Controllers
             }
             return TaskFlowModelListQuery;
         }
-
         /// <summary>
         /// 获取流程状态
         /// </summary>
@@ -1386,6 +1450,44 @@ namespace DingTalk.Controllers
             else
             {
                 return "已完成";
+            }
+        }
+
+
+        #endregion
+
+        #region 审批流修改
+
+        /// <summary>
+        /// 审批流修改
+        /// </summary>
+        /// <param name="tasks"></param>
+        /// <returns></returns>
+        [Route("TaskModify")]
+        [HttpPost]
+        public NewErrorModel ModifyTable(Tasks tasks)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    Tasks tasksNew = context.Tasks.Where(t => t.TaskId == tasks.TaskId && t.NodeId == 0).First();
+                    tasksNew.ImageUrl = tasks.ImageUrl;
+                    context.Entry<Tasks>(tasksNew).State = System.Data.Entity.EntityState.Modified;
+                    context.SaveChanges();
+                }
+
+                return new NewErrorModel()
+                {
+                    error = new Error(0, "", "修改成功") { },
+                };
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(1, "", ex.Message) { },
+                };
             }
         }
 
@@ -1439,7 +1541,8 @@ namespace DingTalk.Controllers
                     using (DDContext context = new DDContext())
                     {
                         List<NodeInfo> NodeInfoList = context.NodeInfo.Where(u => u.FlowId == FlowId).ToList();
-                        List<Tasks> TaskList = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.IsBacked != false).ToList();
+                        List<Tasks> TaskList = context.Tasks.Where(u => u.TaskId.ToString() == TaskId).ToList();
+
                         var Quary = from n in NodeInfoList
                                     join t in TaskList
                                     on n.NodeId equals t.NodeId
@@ -1448,6 +1551,7 @@ namespace DingTalk.Controllers
                                     orderby n.NodeId
                                     select new
                                     {
+                                        Id = tt == null ? 0 : tt.Id,
                                         NodeId = n.NodeId,
                                         NodeName = n.NodeName,
                                         IsBack = tt == null ? false : tt.IsBacked,
@@ -1519,43 +1623,47 @@ namespace DingTalk.Controllers
         /// <summary>
         /// 审批页面通用数据读取
         /// </summary>
-        /// <param name="TaskId">流水号</param>
-        /// <param name="ApplyManId">用户Id</param>
+        /// <param name="TaskId"></param>
+        /// <param name="ApplyManId"></param>
         /// <returns></returns>
-        /// 测试数据 /FlowInfo/GetApproveInfo?TaskId=7
-        public string GetApproveInfo(string TaskId, string ApplyManId)
+        [HttpGet]
+        [Route("GetApproveInfo")]
+        public NewErrorModel GetApproveInfo(string TaskId, string ApplyManId)
         {
             try
             {
                 if (string.IsNullOrEmpty(TaskId))
                 {
-                    return JsonConvert.SerializeObject(new ErrorModel
+                    return new NewErrorModel()
                     {
-                        errorCode = 1,
-                        errorMessage = "请传递参数"
-                    });
+                        error = new Error(0, "请传递参数！", "") { },
+                    };
                 }
                 else
                 {
                     using (DDContext context = new DDContext())
                     {
-                        Tasks task = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.ApplyManId == ApplyManId && u.IsEnable == 1).OrderByDescending(t => t.Id).First();
+                        Tasks task = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.IsSend != true).OrderByDescending(t => t.Id).First();
                         Tasks taskOld = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.NodeId == 0).First();
                         taskOld.Id = task.Id;
                         taskOld.NodeId = task.NodeId;
-                        return JsonConvert.SerializeObject(taskOld);
+                        return new NewErrorModel()
+                        {
+                            data = taskOld,
+                            error = new Error(0, "读取成功！", "") { },
+                        };
                     }
                 }
             }
             catch (Exception ex)
             {
-                return JsonConvert.SerializeObject(new ErrorModel
+                return new NewErrorModel()
                 {
-                    errorCode = 2,
-                    errorMessage = ex.Message
-                });
+                    error = new Error(2, ex.Message, "") { },
+                };
             }
         }
+
         #endregion
 
         #region 系统已配置人员信息读取
@@ -1623,6 +1731,7 @@ namespace DingTalk.Controllers
             {
                 form = new form[] {
                     new form{ key="姓名",value="11张三"},
+
                     new form{ key="爱好",value="打球"},
                 },
                 rich = new rich
@@ -1679,7 +1788,7 @@ namespace DingTalk.Controllers
                         strLink = "eapp://page/approve/approve?index=2";
 
                         return await dingTalkServersController.sendOaMessage(ApplyManId,
-                       string.Format("您的一条被退回的流程(流水号:{0})，详情请及点击进入研究院信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
+                       string.Format("您的一条被退回的流程(流水号:{0})，详情请及点击进入华数信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
                        ApplyMan, strLink);
                     }
                     else
@@ -1690,7 +1799,7 @@ namespace DingTalk.Controllers
                             strLink = "eapp://page/approve/approve?index=3";
 
                             return await dingTalkServersController.sendOaMessage(ApplyManId,
-                      string.Format("您有一条抄送的流程(流水号:{0})，请及点击进入研究院信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
+                      string.Format("您有一条抄送的流程(流水号:{0})，请及点击进入华数信息管理系统进行查阅。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
                       ApplyMan, strLink);
                         }
                         else
@@ -1698,7 +1807,7 @@ namespace DingTalk.Controllers
                             //strLink = strLink + "&index=0";
                             strLink = "eapp://page/approve/approve?index=0";
                             return await dingTalkServersController.sendOaMessage(ApplyManId,
-                       string.Format("您有一条待审批的流程(流水号:{0})，请及点击进入研究院信息管理系统进行审批。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
+                       string.Format("您有一条待审批的流程(流水号:{0})，请及点击进入华数信息管理系统进行审批。(Ps:如果点击没有反应，请尝试升级手机钉钉版本)", TaskId),
                        ApplyMan, strLink);
                         }
                     }
@@ -1707,21 +1816,21 @@ namespace DingTalk.Controllers
                 {
                     if (IsBack)
                     {
-                        SentCommonMsg(ApplyManId, string.Format("您有被退回的流程(流水号:{0})，请进入研究院信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
+                        SentCommonMsg(ApplyManId, string.Format("您有被退回的流程(流水号:{0})，请进入华数信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
                     }
                     else
                     {
                         if (IsSend)
                         {
-                            SentCommonMsg(ApplyManId, string.Format("您有一条抄送的流程(流水号:{0})，请进入研究院信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
+                            SentCommonMsg(ApplyManId, string.Format("您有一条抄送的流程(流水号:{0})，请进入华数信息管理系统进行查阅。", TaskId), ApplyMan, Remark, null);
                         }
                         else
                         {
-                            SentCommonMsg(ApplyManId, string.Format("您有一条待审批的流程(流水号:{0})，请进入研究院信息管理系统进行审批。", TaskId), ApplyMan, Remark, null);
+                            SentCommonMsg(ApplyManId, string.Format("您有一条待审批的流程(流水号:{0})，请进入华数信息管理系统进行审批。", TaskId), ApplyMan, Remark, null);
                         }
                     }
                     return dingTalkServersController.sendOaMessage("测试",
-                           string.Format("您有一条待审批的流程(流水号:{0})，请进入研究院信息管理系统进行审批。", TaskId),
+                           string.Format("您有一条待审批的流程(流水号:{0})，请进入华数信息管理系统进行审批。", TaskId),
                            ApplyMan, "eapp://page/approve/approve");
                 }
             }
@@ -1740,7 +1849,7 @@ namespace DingTalk.Controllers
                     SentCommonMsg(ApplyManId, string.Format("您发起的审批的流程(流水号:{0})，已审批完成请知晓。", TaskId), ApplyMan, Remark, null);
                 }
                 return dingTalkServersController.sendOaMessage("测试",
-                          string.Format("您有一条待审批的流程(流水号:{0})，请进入研究院信息管理系统进行审批。", TaskId),
+                          string.Format("您有一条待审批的流程(流水号:{0})，请进入华数信息管理系统进行审批。", TaskId),
                           ApplyMan, "eapp://page/approve/approve");
             }
         }
@@ -1788,5 +1897,131 @@ namespace DingTalk.Controllers
 
 
         #endregion
+
+        #region 本人审批意见修改
+
+        /// <summary>
+        /// 本人审批意见修改
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <param name="Remark"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("ChangeRemark")]
+        public NewErrorModel ChangeRemark(string Id, string Remark)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    Tasks tasks = context.Tasks.Find(Int32.Parse(Id));
+                    tasks.Remark = Remark;
+                    context.Entry<Tasks>(tasks).State = EntityState.Modified;
+                    context.SaveChanges();
+                }
+                return new NewErrorModel()
+                {
+                    error = new Error(0, "修改成功！", "") { },
+                };
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(1, ex.Message, "") { },
+                };
+            }
+        }
+
+        #endregion
+
+        #region 获取流程状态
+
+        /// <summary>
+        /// 获取流程状态
+        /// </summary>
+        /// <param name="TaskId"></param>
+        /// <returns></returns>
+        public NewErrorModel GetTasksState(string TaskId)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    return new NewErrorModel()
+                    {
+                        data = context.TasksState.Where(t => t.TaskId == TaskId).FirstOrDefault(),
+                        error = new Error(0, "获取成功！", "") { }
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(1, ex.Message, "") { },
+                };
+            }
+        }
+
+        #endregion
+
+        #region 同步流程状态(新旧数据交替)
+
+        /// <summary>
+        /// 同步流程状态(新旧数据交替)
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("SynTasksState")]
+        public NewErrorModel SynTasksState()
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    List<Tasks> tasks = context.Tasks.ToList();
+                    FlowInfoServer flowInfoServer = new FlowInfoServer();
+                    EFHelper<TasksState> eFHelper = new EFHelper<TasksState>();
+                    eFHelper.DelBy(t => t.TaskId != "");
+                    List<string> taskIdList = new List<string>();
+                    foreach (var item in tasks)
+                    {
+                        if (!taskIdList.Contains(item.TaskId.ToString()))
+                        {
+                            taskIdList.Add(item.TaskId.ToString());
+                        }
+                    }
+                    List<TasksState> TasksStateList = new List<TasksState>();
+                    foreach (var taskId in taskIdList)
+                    {
+                        TasksStateList.Add(new TasksState()
+                        {
+                            TaskId = taskId,
+                            State = flowInfoServer.GetTasksState(taskId)
+                        });
+                    }
+
+                    context.TasksState.AddRange(TasksStateList);
+                    context.SaveChanges();
+
+                    return new NewErrorModel()
+                    {
+                        count = TasksStateList.Count,
+                        error = new Error(0, "同步成功！", "") { }
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(1, ex.Message, "") { },
+                };
+            }
+        }
+
+        #endregion
+
     }
 }

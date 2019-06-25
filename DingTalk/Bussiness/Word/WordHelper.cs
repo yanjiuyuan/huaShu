@@ -91,7 +91,7 @@ namespace DingTalk.Bussiness.Word
             //转化HTML页面统一编码格式
             TransHTMLEncoding(ConfigPath);
 
-            //拷贝文件到研究院官网目录下
+            //拷贝文件到华数官网目录下
             CopyDir(System.Web.HttpContext.Current.Server.MapPath("/html/"), YjyWebPath+"html");
             return (strFilePath + filename + ".html");
         }
