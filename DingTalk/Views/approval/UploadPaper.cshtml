@@ -58,9 +58,13 @@
                 </el-option>
             </el-select>
             @*<el-button class="button-new-tag" size="small" v-on:click="showAddProject = true">+ 添加项目</el-button>
-                <el-button v-show="showAddProject" class="button-new-tag" size="small" v-on:click="showAddProject = false">隐藏</el-button>*@
+            <el-button v-show="showAddProject" class="button-new-tag" size="small" v-on:click="showAddProject = false">隐藏</el-button>*@
         </el-form-item>
-
+        <el-form-item label="图纸用途" required="required">
+            <el-select v-model="ruleForm.ProjectType">
+                <el-option v-for="s of ProjectTypes" :label="s" :value="s" key="s"></el-option>
+            </el-select>
+        </el-form-item>
         <el-form-item label="标题" prop="Title">
             <el-input v-model="ruleForm.Title"></el-input>
         </el-form-item>
@@ -123,7 +127,7 @@
         </sam-approver-list>
         <!--添加抄送人-->
         @*<sam-addapprover :preset="preCopy" :approvers="ruleForm.copyers">
-            </sam-addapprover>*@
+        </sam-addapprover>*@
         <el-form-item>
             <el-button type="primary" v-on:click="onSubmit('ruleForm')" :disabled="disablePage">提交</el-button>
         </el-form-item>
@@ -181,6 +185,7 @@
                 nodeInfo: {},
                 nodeList: [],
                 projectList: [],
+                ProjectTypes: ['电气采购', '机械加工', '机械采购', '其他'],
                 //图片上传参数
                 dialogImageUrl: '',
                 dialogVisible: false,
@@ -200,6 +205,7 @@
                     inputProjectId: '',
                     Title: '',
                     ProjectId: null,
+                    ProjectType: '机械加工',
                     Time: ''
                 }
             }
@@ -253,6 +259,7 @@
                             "MediaIdPDF": that.mediaPdfList.join(','),
                             "Title": that.ruleForm.Title,
                             "ProjectName": ProjectName,
+                            "ProjectType": that.ruleForm.ProjectType,
                             "ProjectId": that.ruleForm.ProjectId,
                             "PdfState": stateArr.join(',')
                         })
