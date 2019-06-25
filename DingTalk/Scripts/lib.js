@@ -1086,6 +1086,75 @@ var mixin = {
             }
             return true
         },
+        handlePdfFileSuccess(response, file, fileList) {
+            var that = this
+            const loading = this.$loading({
+                lock: true,
+                text: 'Loading',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
+            var paramObj = {
+                "": file.response.Content
+            }
+            $.ajax({
+                url: '/DingTalkServers/UploadMedia/',
+                type: 'POST',
+                data: paramObj,
+                success: function (data) {
+                    data = JSON.parse(data)
+                    console.log('/api/dt/uploadMedia/')
+                    console.log(paramObj)
+                    if (data.media_id) {
+                        console.log(data.media_id)
+                        that.mediaPdfList.push(data.media_id)
+                        fileList[fileList.length - 1]['mediaid'] = data.media_id
+                    } else {
+                        console.log('无media_di')
+                    }
+                    that.pdfList = _cloneArr(fileList)
+                    loading.close()
+                }
+            })
+        },
+        beforePdfFileUpload(file) {
+            console.log('before pdf')
+            console.log(file)
+            if (file.name.indexOf(' ') >= 0) {
+                this.$alert('文件名不能带空格', '上传失败', {
+                    confirmButtonText: '确定',
+                });
+                return false
+            }
+            file.name = 'helloWorld'
+            const isPdfType = file.type === 'application/pdf'
+            const isLt2M = file.size / 1024 / 1024 < 10
+            if (!isPdfType) {
+                this.$message.error('上传图片只能是 PDF 格式!')
+                return false
+            }
+            if (!isLt2M) {
+                this.$message.error('上传文件大小不能超过 10MB!')
+                return false
+            }
+            return true
+        },
+        HandlePdfFileRemove(file, fileList) {
+            this.pdfList = _cloneArr(fileList)
+        },
+        beforeExcelUpload(file) {
+            const isExcel = (file.name.substr(-3) == 'xls' || file.name.substr(-4) == 'xlsx')
+            const isLt2M = file.size / 1024 / 1024 < 4
+            if (!isExcel) {
+                this.$message.error('只能上传 excel 文件!')
+                return false
+            }
+            if (!isLt2M) {
+                this.$message.error('上传文件大小不能超过 4MB!')
+                return false
+            }
+            return true
+        },
 
         //根据taskId获取下一个需要审批的人，即要钉的人
         GetDingList(taskId) {
