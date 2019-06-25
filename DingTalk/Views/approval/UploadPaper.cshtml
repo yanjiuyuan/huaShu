@@ -109,11 +109,11 @@
                        action="/drawingupload/Upload"
                        :on-remove="handleFileRemove"
                        :before-remove="isPdfFile = false"
-                       :before-upload="BeforeFileUpload"
+                       :before-upload="beforeFileUpload"
                        :on-success="HandleFileSuccess"
                        multiple>
                 <i class="el-icon-upload"></i>
-                <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                <div class="el-upload__text">上传excelBom表、3D文件 --><em>点击上传</em></div>
                 <div class="el-upload__tip" slot="tip">不超过30M</div>
             </el-upload>
         </el-form-item>
@@ -223,8 +223,8 @@
                         for (var i = 0; i < that.pdfList.length; i++) {
                             stateArr.push(0)
                         }
-                        if (!that.ruleForm.FilePDFUrl) {
-                            this.$alert('图纸未上传', '提交错误', {
+                        if (!that.ruleForm.FilePDFUrl || !that.ruleForm.FileUrl) {
+                            this.$alert('图纸或文件未上传', '提交错误', {
                                 confirmButtonText: '确定',
                                 callback: action => {
 
@@ -412,6 +412,12 @@
 
             handlePdfFileCardSuccess(response, file, fileList) {
                 var that = this
+                const loading = this.$loading({
+                    lock: true,
+                    text: 'Loading',
+                    spinner: 'el-icon-loading',
+                    background: 'rgba(0, 0, 0, 0.7)'
+                });
                 var paramObj = {
                     "": file.response.Content
                 }
@@ -431,6 +437,7 @@
                             console.log('无media_di')
                         }
                         that.pdfList = _cloneArr(fileList)
+                        loading.close()
                     }
                 })
             },
@@ -450,8 +457,43 @@
                 }
                 return true
             },
+            beforeFileUpload(file) {
+                console.log('before file')
+                console.log(file)
+                for (let f of this.pdfList) {
+                    if (f.name == file.name) {
+                        this.$alert('不能上传相同名称文件', '上传失败', {
+                            confirmButtonText: '确定',
+                        });
+                        return false
+                    }
+                }
+                if (file.name.indexOf(' ') >= 0) {
+                    this.$alert('文件名不能带空格', '上传失败', {
+                        confirmButtonText: '确定',
+                    });
+                    return false
+                }
+                file.name = 'helloWorld'
+                isPdf = false
+                const isLt2M = file.size / 1024 / 1024 < 10
+                if (!isLt2M) {
+                    this.$message.error('上传文件大小不能超过 10MB!')
+                    return false
+                }
+                this.isPdfFile = false
+                return true
+            },
             beforePdfFileUpload(file) {
                 console.log(file)
+                for (let f of this.fileList) {
+                    if (f.name == file.name) {
+                        this.$alert('不能上传相同名称文件', '上传失败', {
+                            confirmButtonText: '确定',
+                        });
+                        return false
+                    }
+                }
                 file.name = 'helloWorld'
                 isPdf = true
                 const isPdfType = file.type === 'application/pdf'
