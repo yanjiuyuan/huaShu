@@ -31,6 +31,9 @@
         @*<el-form-item label="公司名称">
             <el-input v-model="form.CompanyName" style="width:550px;" :disabled="true"></el-input>
         </el-form-item>*@
+        <el-form-item label="协作单位">
+            <el-input v-model="form.CompanyName" style="width:550px;" :disabled="true"></el-input>
+        </el-form-item>
         <el-form-item label="部门名称">
             <el-input v-model="form.DeptName" style="width:550px;" :disabled="true"></el-input>
         </el-form-item>
@@ -139,7 +142,7 @@
                     }
                     this.PostData('CreateProject/Modify', this.form, (res) => {
                         $.ajax({
-                            url: "/Project AddProject?IsPower=true",
+                            url: "/Project/AddProject?IsPower=true",
                             type: "POST",
                             dataType: "json",
                             data: JSON.stringify(that.form),
@@ -147,6 +150,7 @@
                                 console.log("添加项目")
                                 console.log(data)
                                 if (data.errorCode == 0) {
+                                    that.aggreSubmit(aggreParam)
                                 } else {
                                     that.$alert(data.errorMessage, '提示信息', {
                                         confirmButtonText: '确定'

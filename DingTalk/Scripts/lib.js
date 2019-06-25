@@ -14,7 +14,8 @@ var imageList = []
 var fileList = []
 var pdfList = []
 //let jinDomarn = 'http://1858o1s713.51mypc.cn:46389/api/'
-let jinDomarn = 'http://wuliao5222.55555.io:45578/api/'
+let jinDomarn = 'http://wuliao5222.55555.io:45578/api/'//华数
+let jinDomarn2 = 'http://wuliao5222.55555.io:35705/api/'//研究院
 let ProjectTypes = ['自研项目', '纵向项目', '横向项目']
 let DeptNames = ['', '智慧工厂事业部', '数控一代事业部', '机器人事业部', '行政部', '财务部', '制造试验部', '项目推进部']
 let CompanyNames = ['泉州华中科技大学智能制造研究院', '泉州华数机器人有限公司']
@@ -493,6 +494,7 @@ var mixin = {
         },
         //提交审批
         approvalSubmit(formName, param, callBack, param2 = {}) {
+            if (!DingData.userid) return
             var that = this
             this.$refs[formName].validate((valid) => {
                 if (valid) {
@@ -572,6 +574,7 @@ var mixin = {
         },
         //同意审批
         aggreSubmit(param, param2 = {}) {
+            if (!DingData.userid) return
             this.disablePage = true
             var paramArr = []
             var that = this
@@ -1024,6 +1027,12 @@ var mixin = {
         },
         HandleFileSuccess(response, file, fileList) {
             var that = this
+            const loading = this.$loading({
+                lock: true,
+                text: 'Loading',
+                spinner: 'el-icon-loading',
+                background: 'rgba(0, 0, 0, 0.7)'
+            });
             var paramObj = {
                 "": file.response.Content
             }
@@ -1039,11 +1048,13 @@ var mixin = {
                     if (data.media_id) {
                         console.log(data.media_id)
                         that.mediaList.push(data.media_id)
+                        fileList[fileList.length - 1]['mediaid'] = data.media_id
                         //that.ruleForm
                     } else {
                         console.log('无media_di')
                     }
                     that.fileList = _cloneArr(fileList)
+                    loading.close()
                 }
             })
         },

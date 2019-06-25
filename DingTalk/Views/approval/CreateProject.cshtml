@@ -7,7 +7,7 @@
     <!--标题-->
     <div class="head-fixed" onclick="loadPage('/Main/approval')">
         <i class="el-icon-arrow-left"></i>
-        添加项目
+        立项申请
     </div>
     <!--创建项目表单-->
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="110px" class="demo-ruleForm"
@@ -23,26 +23,29 @@
                 <el-input v-model="ruleForm.inputProjectName"></el-input>
             </el-form-item>
             @*<el-form-item label="项目编号" prop="inputProjectId">
-                <el-input v-model="ruleForm.inputProjectId"></el-input>
-            </el-form-item>*@
+            <el-input v-model="ruleForm.inputProjectId"></el-input>
+        </el-form-item>*@
             <el-form-item label="承担部门">
                 <el-select v-model="ruleForm.DeptName" style="width:300px;">
                     <el-option v-for="s of DeptNames" :label="s" :value="s" key="s"></el-option>
                 </el-select>
             </el-form-item>
+            <el-form-item label="协作单位" prop="CompanyName">
+                <el-input v-model="ruleForm.CompanyName"></el-input>
+            </el-form-item>
             @*<el-form-item label="承担部门">
-                    <el-input v-model="ruleForm.DeptName"></el-input>
-                </el-form-item>*@
+            <el-input v-model="ruleForm.DeptName"></el-input>
+        </el-form-item>*@
             @*<el-form-item label="状态" required="required">
-                <el-select v-model="ruleForm.ProjectState">
-                    <el-option v-for="s of status" :label="s" :value="s" key="s"></el-option>
-                </el-select>
-            </el-form-item>*@
+            <el-select v-model="ruleForm.ProjectState">
+                <el-option v-for="s of status" :label="s" :value="s" key="s"></el-option>
+            </el-select>
+        </el-form-item>*@
             @*<el-form-item label="公司名称" required="required">
-                    <el-select v-model="ruleForm.CompanyName" style="width:300px;">
-                        <el-option v-for="s of CompanyNames" :label="s" :value="s" key="s"></el-option>
-                    </el-select>
-                </el-form-item>*@
+            <el-select v-model="ruleForm.CompanyName" style="width:300px;">
+                <el-option v-for="s of CompanyNames" :label="s" :value="s" key="s"></el-option>
+            </el-select>
+        </el-form-item>*@
             <el-form-item label="项目类型" required="required">
                 <el-select v-model="ruleForm.ProjectType">
                     <el-option v-for="s of ProjectTypes" :label="s" :value="s" key="s"></el-option>
@@ -106,6 +109,7 @@
                 DeptNames: DeptNames,
                 //CompanyNames: CompanyNames,
                 ruleForm: {
+                    Title: '立项申请',
                     ApplyMan: DingData.nickName,
                     ApplyManId: DingData.userid,
                     inputProjectName: '',
@@ -116,7 +120,7 @@
                     ProjectId: null,
                     Time: '',
                     ProjectType: ProjectTypes[0],
-                    //CompanyName: CompanyNames[0]
+                    CompanyName: ''
                 }
             }
         },
@@ -150,7 +154,7 @@
                             "ResponsibleManId": this.ResponsibleMan[0].emplId,
                             "TeamMembers": names.join(','),
                             "TeamMembersId": ids.join(','),
-                            //"CompanyName": this.ruleForm.CompanyName,
+                            "CompanyName": this.ruleForm.CompanyName,
                             "ProjectType": this.ruleForm.ProjectType,
                             "CreateManId": DingData.userid,
                             "CreateMan": DingData.nickName,
