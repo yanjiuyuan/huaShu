@@ -418,8 +418,13 @@ namespace DingTalk.Controllers
 
                 DataTable dtSourse = DtLinqOperators.CopyToDataTable(SelectPurchaseListOne);
                 List<NodeInfo> NodeInfoList = context.NodeInfo.Where(u => u.FlowId == FlowId && u.NodeId != 0 && u.IsSend != true && u.NodeName != "结束").ToList();
+
                 foreach (NodeInfo nodeInfo in NodeInfoList)
                 {
+                    //临时用作备注
+                    nodeInfo.PreNodeId = context.Tasks.Where(t => t.TaskId.ToString() == tasks.TaskId.ToString()
+                      && t.NodeId == nodeInfo.NodeId).FirstOrDefault().Remark;
+
                     if (!string.IsNullOrEmpty(nodeInfo.NodePeople))
                     {
                         if (nodeInfo.NodePeople.Length > 3)

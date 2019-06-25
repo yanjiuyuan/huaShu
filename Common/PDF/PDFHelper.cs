@@ -171,8 +171,11 @@ namespace Common.PDF
                         content.IndentationLeft = IndentationLeft;
                         Chunk chunkName = new Chunk(dtApproveView.Rows[i]["NodeName"].ToString() + ":", fontSmallNoBold);
                         Chunk chunkText = new Chunk(dtApproveView.Rows[i]["NodePeople"].ToString(), fontSmallNoBold);
+                        Chunk chunkRemark = new Chunk(dtApproveView.Rows[i]["PreNodeId"].ToString(), fontSmallNoBold);
+
                         content.Add(0, chunkName);
                         content.Add(1, chunkText);
+                        content.Add(2, chunkRemark);
                         content.Alignment = 30;
                         //j++;
                         //if (i != 0 && i % iResult == 0 && i!= iResult)
