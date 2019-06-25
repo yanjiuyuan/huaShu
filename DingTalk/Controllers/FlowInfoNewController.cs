@@ -1420,44 +1420,41 @@ namespace DingTalk.Controllers
         /// <summary>
         /// 审批页面通用数据读取
         /// </summary>
-        /// <param name="TaskId"></param>
-        /// <param name="ApplyManId"></param>
+        /// <param name="TaskId">流水号</param>
+        /// <param name="ApplyManId">用户Id</param>
         /// <returns></returns>
-        [HttpGet]
-        [Route("GetApproveInfo")]
-        public NewErrorModel GetApproveInfo(string TaskId, string ApplyManId)
+        /// 测试数据 /FlowInfo/GetApproveInfo?TaskId=7
+        public string GetApproveInfo(string TaskId, string ApplyManId)
         {
             try
             {
                 if (string.IsNullOrEmpty(TaskId))
                 {
-                    return new NewErrorModel()
+                    return JsonConvert.SerializeObject(new ErrorModel
                     {
-                        error = new Error(0, "请传递参数！", "") { },
-                    };
+                        errorCode = 1,
+                        errorMessage = "请传递参数"
+                    });
                 }
                 else
                 {
                     using (DDContext context = new DDContext())
                     {
-                        Tasks task = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.IsSend != true).OrderByDescending(t => t.Id).First();
+                        Tasks task = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.ApplyManId == ApplyManId && u.IsEnable == 1).OrderByDescending(t => t.Id).First();
                         Tasks taskOld = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.NodeId == 0).First();
                         taskOld.Id = task.Id;
                         taskOld.NodeId = task.NodeId;
-                        return new NewErrorModel()
-                        {
-                            data = taskOld,
-                            error = new Error(0, "读取成功！", "") { },
-                        };
+                        return JsonConvert.SerializeObject(taskOld);
                     }
                 }
             }
             catch (Exception ex)
             {
-                return new NewErrorModel()
+                return JsonConvert.SerializeObject(new ErrorModel
                 {
-                    error = new Error(2, ex.Message, "") { },
-                };
+                    errorCode = 2,
+                    errorMessage = ex.Message
+                });
             }
         }
 
