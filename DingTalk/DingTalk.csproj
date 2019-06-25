@@ -343,6 +343,7 @@
     <Compile Include="Controllers\CarTableController.cs" />
     <Compile Include="Controllers\ContractManagerController.cs" />
     <Compile Include="Controllers\CreateProjectController.cs" />
+    <Compile Include="Controllers\DrawingChangeController.cs" />
     <Compile Include="Controllers\DrawingDownController.cs" />
     <Compile Include="Controllers\DrawingUploadController.cs" />
     <Compile Include="Controllers\DrawingUploadNewController.cs" />
@@ -411,6 +412,8 @@
     <Compile Include="Models\DepartmentUserResponseModel.cs" />
     <Compile Include="Models\DeptModel.cs" />
     <Compile Include="Models\DingModels\CreateProject.cs" />
+    <Compile Include="Models\DingModels\DrawingChange.cs" />
+    <Compile Include="Models\DingModels\FileChange.cs" />
     <Compile Include="Models\DingModels\GoDown.cs" />
     <Compile Include="Models\DingModels\PicInfo.cs" />
     <Compile Include="Models\DingModels\Contract.cs" />

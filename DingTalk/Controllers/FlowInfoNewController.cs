@@ -1440,7 +1440,7 @@ namespace DingTalk.Controllers
                 {
                     using (DDContext context = new DDContext())
                     {
-                        Tasks task = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.ApplyManId == ApplyManId && u.IsEnable == 1).OrderByDescending(t => t.Id).First();
+                        Tasks task = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.ApplyManId == ApplyManId && u.IsEnable == 1 && u.IsSend != true).OrderByDescending(t => t.Id).First();
                         Tasks taskOld = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.NodeId == 0).First();
                         taskOld.Id = task.Id;
                         taskOld.NodeId = task.NodeId;
@@ -1654,36 +1654,5 @@ namespace DingTalk.Controllers
 
 
         #endregion
-        
-        #region 移动端版本校对
-
-        /// <summary>
-        /// 移动端版本校对
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [Route("CheckVersion")]
-        public NewErrorModel CheckVersion()
-        {
-            try
-            {
-                return new NewErrorModel()
-                {
-                    data = ConfigurationManager.AppSettings["VersionNumner"],
-                    error = new Error(0, "获取成功！", "") { },
-                };
-            }
-            catch (Exception ex)
-            {
-                return new NewErrorModel()
-                {
-                    data = true,
-                    error = new Error(1, ex.Message, "") { },
-                };
-            }
-        }
-
-        #endregion
-
     }
 }

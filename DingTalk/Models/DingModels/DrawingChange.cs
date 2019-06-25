@@ -1,4 +1,4 @@
-namespace DingTalk.Models.DingModels
+﻿namespace DingTalk.Models.DingModels
 {
     using System;
     using System.Collections.Generic;
@@ -6,8 +6,8 @@ namespace DingTalk.Models.DingModels
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Spatial;
 
-    [Table("Purchase")]
-    public partial class Purchase
+    [Table("DrawingChange")]
+    public partial class DrawingChange
     {
         [Column(TypeName = "numeric")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -15,6 +15,10 @@ namespace DingTalk.Models.DingModels
 
         [StringLength(300)]
         public string TaskId { get; set; }
+
+
+        [StringLength(200)]
+        public string OldId { get; set; }
 
         [StringLength(500)]
         public string BomId { get; set; }
@@ -57,9 +61,10 @@ namespace DingTalk.Models.DingModels
         [StringLength(200)]
         public string NeedTime { get; set; }
 
+        /// <summary>
+        /// 变更类型  1 新增 2 删除 
+        /// </summary>
         [StringLength(200)]
         public string ChangeType { get; set; }
-
-
     }
 }

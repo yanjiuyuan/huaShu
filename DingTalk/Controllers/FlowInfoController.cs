@@ -1522,7 +1522,7 @@ namespace DingTalk.Controllers
                     using (DDContext context = new DDContext())
                     {
                         Tasks task = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.ApplyManId == ApplyManId && u.IsEnable == 1).OrderByDescending(t => t.Id).First();
-                        Tasks taskOld = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.NodeId == 0).First();
+                        Tasks taskOld = context.Tasks.Where(u => u.TaskId.ToString() == TaskId && u.NodeId == 0 && u.IsSend != true).First();
                         taskOld.Id = task.Id;
                         taskOld.NodeId = task.NodeId;
                         return JsonConvert.SerializeObject(taskOld);

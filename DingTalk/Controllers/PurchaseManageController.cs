@@ -432,6 +432,11 @@ namespace DingTalk.Controllers
                     }
                 }
 
+                //临时用作备注
+                nodeInfo.PreNodeId = context.Tasks.Where(t => t.TaskId.ToString() == tasks.TaskId.ToString()
+                  && t.NodeId == nodeInfo.NodeId).FirstOrDefault().Remark;
+
+
                 if (nodeInfo.NodeName.ToString() == "采购员采购")
                 {
                     nodeInfo.NodePeople = "";
