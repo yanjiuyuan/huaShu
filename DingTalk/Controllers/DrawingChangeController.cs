@@ -194,7 +194,7 @@ namespace DingTalk.Controllers
 
                     if (item.ChangeType == "2")  //删除
                     {
-                        Purchase purchase = context.Purchase.Find(item.OldId);
+                        Purchase purchase = context.Purchase.Find(Int32.Parse(item.OldId));
                         purchase.ChangeType = item.ChangeType;
                         context.Entry<Purchase>(purchase).State = System.Data.Entity.EntityState.Modified;
                         context.SaveChanges();
