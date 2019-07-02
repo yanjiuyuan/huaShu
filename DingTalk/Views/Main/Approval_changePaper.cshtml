@@ -220,6 +220,7 @@
 
     var state = ''
     var Index = ''
+    var DrawingChangeList = []
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
         NodeId = UrlObj.nodeid
@@ -299,7 +300,8 @@
             onSubmit(formName) {
                 this.disablePage = true
                 if (NodeId == 5) {
-                    this.PostData('DrawingChange/ChangeBom', this.ruleForm, (res) => {
+                    console.log(JSON.stringify(DrawingChangeList))
+                    this.PostData('DrawingChange/ChangeBom', DrawingChangeList, (res) => {
                         this.aggreSubmit({
                             "Id": allData.Id,
                             "Remark": this.ruleForm.mark,
@@ -353,6 +355,7 @@
             //获取bom表信息
             getBomInfo() {
                 this.GetData("DrawingChange/Read?TaskId=" + TaskId, (res) => {
+                    DrawingChangeList = res.DrawingChangeList
                     for (let a of this.dataArr) {
                         for (let d of res.DrawingChangeList) {
                             if (a.Sorts == d.Sorts) {

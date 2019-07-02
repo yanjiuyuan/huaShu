@@ -165,30 +165,12 @@
         },
         methods: {
             getMenu: function () {
-                 
-                var that = this
-                $.ajax({
-                    url: '/FlowInfo/LoadFlowSort?id=123',
-                    dataType: 'json',
-                    type: 'GET',
-                    cache: false,
-                    success: function (data) {
-                        that.menu = data
-                        console.log('/FlowInfo/LoadFlowSort?id=123')
-                        console.log(that.menu)
-                        $.ajax({
-                            url: '/FlowInfo/LoadFlowInfo?id=123',
-                            dataType: 'json',
-                            type: 'GET',
-                            cache: false,
-                            success: function (data) {
-                                that.list = _mergeObjectArr(data, imgConfig, 'flowId')
-                                console.log('/FlowInfo/LoadFlowInfo?id=123')
-                                console.log(that.list)
-                                that.filterMenuList()
-                            }
-                        })
-                    }
+                this.GetData('FlowInfoNew/LoadFlowSort?id=123', (res) => {
+                    this.menu = res
+                    this.GetData('FlowInfoNew/LoadFlowInfo?id=123', (res) => {
+                        this.list = _mergeObjectArr(res, imgConfig, 'flowId')
+                        this.filterMenuList()
+                    })
                 })
             },
             filterMenuList() {
