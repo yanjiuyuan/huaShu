@@ -17,7 +17,7 @@ var pdfList = []
 let jinDomarn = 'http://wuliao5222.55555.io:45578/api/'//华数
 let jinDomarn2 = 'http://wuliao5222.55555.io:35705/api/'//华数
 let ProjectTypes = ['自研项目', '纵向项目', '横向项目']
-let DeptNames = ['', '智慧工厂事业部', '数控一代事业部', '机器人事业部', '行政部', '财务部', '制造试验部', '项目推进部']
+let DeptNames = ['', '智慧工厂事业部', '数控一代事业部', '机器人事业部', '行政部', '财务部', '制造试验部', '项目推进部', '自动化事业部']
 let CompanyNames = ['泉州华中科技大学智能制造华数', '泉州华数机器人有限公司']
 
 //原型方法
