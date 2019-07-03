@@ -114,11 +114,11 @@ namespace DingTalk.Controllers
             {
                 //Dictionary<string, string> keyValuePairs = new Dictionary<string, string>();
                 //keyValuePairs.Add("FBillNo", "88");
-                //string result = HttpPost("http://wuliao5222.55555.io:35705/api/GoDown/GetGodownInfoByFBillNo",
+                //string result = HttpPost("http://wuliao5222.55555.io:45578/api/GoDown/GetGodownInfoByFBillNo",
                 //   keyValuePairs);
 
 
-                HttpWebResponse httpWebResponse = CreateGetHttpResponse("http://wuliao5222.55555.io:35705/api/Pick/GetAll", 5000, null, null);
+                HttpWebResponse httpWebResponse = CreateGetHttpResponse("http://wuliao5222.55555.io:45578/api/Pick/GetAll", 5000, null, null);
 
                 StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
                 string content = reader.ReadToEnd();
@@ -144,7 +144,7 @@ namespace DingTalk.Controllers
                     {
                         foreach (var PurchaseTable in PurchaseTables)
                         {
-                            if (goDown.FNumber == PurchaseTable.CodeNo)
+                            if (goDown.fNumber == PurchaseTable.CodeNo)
                             {
                                 GodownModelList.Add(goDown);
                             }
@@ -462,43 +462,43 @@ namespace DingTalk.Controllers
         /// <summary>
         /// 物料编码
         /// </summary>
-        public string FNumber { get; set; }
+        public string fNumber { get; set; }
         /// <summary>
         /// 物料名称
         /// </summary>
-        public string FName { get; set; }
+        public string fName { get; set; }
         /// <summary>
         /// 规格型号
         /// </summary>
-        public string FModel { get; set; }
+        public string fModel { get; set; }
         /// <summary>
         /// 单位名称
         /// </summary>
-        public string UnitName { get; set; }
+        public string unitName { get; set; }
 
         /// <summary>
         /// 实收数量(可编辑)
         /// </summary>
-        public Decimal FQty { get; set; }
+        public Decimal fQty { get; set; }
 
         /// <summary>
         /// 单价
         /// </summary>
-        public Decimal FPrice { get; set; }
+        public Decimal fPrice { get; set; }
         /// <summary>
         /// 金额
         /// </summary>
-        public Decimal FAmount { get; set; }
+        public Decimal fAmount { get; set; }
 
         /// <summary>
         /// 供应商
         /// </summary>
-        public string FFullName { get; set; }
+        public string fFullName { get; set; }
 
         /// <summary>
         /// 入库数量
         /// </summary>
-        public Decimal FCommitQty { get; set; }
+        public Decimal fCommitQty { get; set; }
 
     }
 }
