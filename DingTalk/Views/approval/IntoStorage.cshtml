@@ -26,7 +26,7 @@
         <el-table-column prop="fModel" label="规格型号"></el-table-column>
         <el-table-column prop="unitName" label="单位"></el-table-column>
         @*<el-table-column prop="fPrice" label="单价"></el-table-column>*@
-        <el-table-column prop="fAmount" label="金额"></el-table-column>
+        @*<el-table-column prop="fAmount" label="金额"></el-table-column>*@
         <el-table-column prop="fFullName" label="供应商"></el-table-column>
         <el-table-column label="操作">
             <template slot-scope="scope">
@@ -59,8 +59,8 @@
         </el-table-column>
         <el-table-column prop="fModel" label="规格型号"></el-table-column>
         <el-table-column prop="unitName" label="单位"></el-table-column>
-        <el-table-column prop="fPrice" label="单价"></el-table-column>
-        <el-table-column prop="fAmount" label="金额"></el-table-column>
+        @*<el-table-column prop="fPrice" label="单价"></el-table-column>
+            <el-table-column prop="fAmount" label="金额"></el-table-column>*@
         <el-table-column prop="fFullName" label="供应商"></el-table-column>
         <el-table-column label="操作" width="80">
             <template slot-scope="scope">
@@ -78,7 +78,7 @@
             <el-input v-model="ruleForm.name" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="项目名" prop="ProjectId">
-            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
+            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;" v-on:change="selectProject">
                 <el-option v-for="item in projectList"
                            :key="item.ProjectId"
                            :label="item.ProjectName"
@@ -116,9 +116,10 @@
                 nodeInfo: {},
                 searchForm: {
                     business: '',
-                    no:'',
+                    no: '',
                     name: '',
                 },
+                addPeopleNodes: [2],
                 ruleForm: {
                     name: DingData.nickName,
                     remark: '',
@@ -133,6 +134,8 @@
         },
         methods: {
             onSubmit(formName) {
+                //console.log(this.nodeList)
+                //return
                 if (!this.purchaseList.length) {
                     this.elementAlert('提交失败', '没有选择物料')
                     return
@@ -146,16 +149,16 @@
                     arr.push(p.fFullName)
                 }
                 var set = new Set(arr)
-                if (set.size != 1) {
-                    this.elementAlert('提交失败', '物料为空或供应商不唯一')
-                    return
-                }
+                //if (set.size != 1) {
+                //    this.elementAlert('提交失败', '物料为空或供应商不唯一')
+                //    return
+                //}
                 var that = this
                 let callBack = function (taskId) {
                     for (let p of that.purchaseList) {
                         p['TaskId'] = taskId
                     }
-                    that.PostData('/Godown/Save', that.purchaseList, function() {
+                    that.PostData('/Godown/Save', that.purchaseList, function () {
                         that.elementAlert('提示信息', '恭喜提交成功')
                         loadPage('/main/Approval')
                     })
@@ -170,26 +173,55 @@
                 var that = this
                 if (!this.searchForm.name) return
                 var url = jinDomarn + 'Godown/ReadGodownInfoSingle?keyWord=' + that.searchForm.name
-                this.GetData(url, function(data) {
+                this.GetData(url, function (data) {
                     that.data = data
                     that.totalRows = data.length
                     that.getData()
+
+
                 })
+            },
+            //下拉框选择项目
+            selectProject(id) {
+                console.log(id)
+                for (var project of this.projectList) {
+                    if (project.ProjectId == id) {
+                        this.ruleForm.Title = project.ProjectName + ' - 编号：' + project.ProjectId
+                        let index = 2
+                        this.nodeList[index].AddPeople = [{
+                            name: project.ResponsibleMan,
+                            emplId: project.ResponsibleManId
+                        }]
+                        $("." + index).remove()
+                        $("#" + index).after('<span class="el-tag ' + index + '" style="width: 60px; text-align: center; ">' + project.ResponsibleMan.substring(0, 3) + '</span >')
+                    }
+                }
             },
             searchNo() {
                 var that = this
                 if (!this.searchForm.no) return
                 var url = jinDomarn + 'Godown/GetGodownInfoByFBillNo?FBillNo=' + that.searchForm.no
                 this.GetData(url, function (data) {
-                    let tmpArr = []
                     for (let d of data) {
-                        if (d.fQty == d.fCommitQty) continue
-                        tmpArr.push(d)
+                        let ifBreak = false
+                        for (let p of that.purchaseList) {
+                            if (d.fNumber == p.fNumber) ifBreak = true
+                        }
+                        if (ifBreak) break
+                        d['have'] = d.fQty
+                        that.purchaseList.push(d)
                     }
-                    that.data = tmpArr
-                    //that.data = data
-                    that.totalRows = that.data.length
-                    that.getData()
+
+
+                    //let tmpArr = []
+                    //for (let d of data) {
+                    //    if (d.fQty == d.fCommitQty) continue
+                    //    tmpArr.push(d)
+                    //}
+                    //that.data = tmpArr
+                    ////that.data = data
+                    //that.totalRows = that.data.length
+                    //that.getData()
                 })
             },
             searchAndAdd() {
@@ -230,7 +262,7 @@
             //显示临时保存数据
             saveTempData() {
                 setLocalObj('officeSupplies', this.purchaseList)
-                this.elementAlert('提示信息','保存成功')
+                this.elementAlert('提示信息', '保存成功')
             },
             loadTempData() {
                 var data = getLocalObj('officeSupplies')
