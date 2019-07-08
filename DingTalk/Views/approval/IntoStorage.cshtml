@@ -126,16 +126,12 @@
                     ProjectName: '',
                     Title: '入库申请',
                     ProjectId: null,
-                    inputProjectName: '',
-                    inputProjectId: '',
                     Time: ''
                 }
             }
         },
         methods: {
             onSubmit(formName) {
-                //console.log(this.nodeList)
-                //return
                 if (!this.purchaseList.length) {
                     this.elementAlert('提交失败', '没有选择物料')
                     return
@@ -148,12 +144,18 @@
                     }
                     arr.push(p.fFullName)
                 }
-                var set = new Set(arr)
+                //var set = new Set(arr)
                 //if (set.size != 1) {
                 //    this.elementAlert('提交失败', '物料为空或供应商不唯一')
                 //    return
                 //}
                 var that = this
+                var ProjectName
+                for (let p of this.projectList) {
+                    if (p.ProjectId == this.ruleForm.ProjectId) {
+                        ProjectName = p.ProjectName
+                    }
+                }
                 let callBack = function (taskId) {
                     for (let p of that.purchaseList) {
                         p['TaskId'] = taskId
@@ -165,7 +167,9 @@
                 }
                 this.approvalSubmit(formName, {
                     Title: that.ruleForm.Title,
-                    Remark: that.ruleForm.remark
+                    Remark: that.ruleForm.remark,
+                    ProjectName: ProjectName,
+                    ProjectId: this.ruleForm.ProjectId
                 }, callBack)
             },
             //搜索物料列表

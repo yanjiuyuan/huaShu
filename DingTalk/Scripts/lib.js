@@ -18,7 +18,7 @@ let jinDomarn = 'http://wuliao5222.55555.io:45578/api/'//华数
 let jinDomarn2 = 'http://wuliao5222.55555.io:35705/api/'//研究院
 let ProjectTypes = ['自研项目', '纵向项目', '横向项目']
 let DeptNames = ['', '智慧工厂事业部', '数控一代事业部', '机器人事业部', '行政部', '财务部', '制造试验部', '项目推进部', '自动化事业部']
-let CompanyNames = ['泉州华中科技大学智能制造华数', '泉州华数机器人有限公司']
+let CompanyNames = ['泉州华中科技大学智能制造研究院', '泉州华数机器人有限公司']
 
 //原型方法
 Array.prototype.removeByValue = function (val) {
@@ -474,6 +474,7 @@ var mixin = {
             })
         },
         //提交审批
+        //提交审批
         approvalSubmit(formName, param, callBack, param2 = {}) {
             if (!DingData.userid) return
             var that = this
@@ -497,10 +498,7 @@ var mixin = {
                     }
                     paramArr.push(applyObj)
                     for (let node of that.nodeList) {
-                        if ((that.nodeInfo.IsNeedChose && that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) || (node.NodeName.indexOf('申请人') >= 0 && node.NodeId > 0)) {
-                            console.log(node)
-                            console.log(node.ApplyMan)
-                            console.log(node.AddPeople)
+                        if ((that.nodeInfo.IsNeedChose && ((that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) || (that.addPeopleNodes && that.addPeopleNodes.indexOf(node.NodeId) >= 0))) || (node.NodeName.indexOf('申请人') >= 0 && node.NodeId > 0)) {
                             if (node.AddPeople.length == 0) {
                                 this.$alert('您尚未选择审批人', '提交错误', {
                                     confirmButtonText: '确定',
@@ -564,7 +562,7 @@ var mixin = {
                 paramArr[0][p] = param[p]
             }
             for (let node of this.nodeList) {
-                if ((that.nodeInfo.IsNeedChose && that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) || (node.NodeName == "采购员采购" && node.AddPeople.length >0)) {
+                if (that.nodeInfo.IsNeedChose && ((that.nodeInfo.ChoseNodeId && that.nodeInfo.ChoseNodeId.indexOf(node.NodeId) >= 0) || (that.addPeopleNodes && that.addPeopleNodes.indexOf(node.NodeId) >= 0))) {
                     if (node.AddPeople.length == 0) {
                         this.$alert('您尚未选择审批人', '提交错误', {
                             confirmButtonText: '确定',
@@ -594,6 +592,7 @@ var mixin = {
                             "OldFileUrl": null,
                             "IsBack": null
                         }
+                        //if (this.FlowId == 31) tmpParam.IsPost = true
                         for (let p2 in param2) {
                             tmpParam[p2] = param2[p2]
                         }
@@ -601,6 +600,8 @@ var mixin = {
                     }
                 }
             }
+            console.log(JSON.stringify(paramArr))
+            //return
             this.PostData("/FlowInfoNew/SubmitTaskInfo", paramArr, (res) => {
                 this.$alert('审批成功', '操作成功', {
                     confirmButtonText: '确定',
