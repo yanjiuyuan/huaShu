@@ -104,6 +104,7 @@
         Id = UrlObj.id
         Index = UrlObj.index
     }
+    var mans = []
     var demo = new Vue({
         el: "#partPage",
         mixins: [mixin],
@@ -129,8 +130,10 @@
             onSubmit(formName) {
                 console.log('submit!')
                 var that = this
-                let callBack = function () { }
                 if (NodeId == '5') {
+                    //console.log(this.nodeList)
+                    //console.log(this.data)
+                    //return
                     let url = '/Purchase/ModifyPurchaseTable'
                     that._postData(url, function (data) {
                         that.aggreSubmit({
@@ -163,10 +166,10 @@
                     setTimeout(function () {
                         that.setChooseMan()
                         return
-                    },100)
+                    },1000)
                 }
                 if (NodeId != 5) return
-                var mans = []
+                mans = []
                 for (let d of this.data) {
                     mans.push({
                         name: d.PurchaseMan,
@@ -174,8 +177,6 @@
                     })
                 }
                 let hash = {}
-                console.log('set change people before ~~~~~~~~~')
-                console.log(mans)
                 mans = mans.reduce((preVal, curVal) => {
                     hash[curVal.emplId] ? '' : hash[curVal.emplId] = true && preVal.push(curVal);
                     return preVal
@@ -287,27 +288,6 @@
     })
     getFormData(demo)
 
-
-    //获取审批表单信息
-    //function getFormData() {
-    //    var url = "/FlowInfo/GetApproveInfo?TaskId=" + TaskId + "&ApplyManId=" + DingData.userid
-    //    $.ajax({
-    //        url: url,
-    //        type: "GET",
-    //        dataType: "json",
-    //        success: function (data) {
-    //            console.log("获取审批表单信息ok")
-    //            console.log(url)
-    //            console.log(data)
-    //            allData = data
-    //            demo.ruleForm = data
-    //        },
-    //        error: function (err) {
-    //            console.log(err);
-
-    //        }
-    //    })
-    //}
 
 </script>
 
