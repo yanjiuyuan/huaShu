@@ -57,8 +57,6 @@
                     <span style="float: right; color: #8492a6; font-size: 13px"></span>
                 </el-option>
             </el-select>
-            @*<el-button class="button-new-tag" size="small" v-on:click="showAddProject = true">+ 添加项目</el-button>
-            <el-button v-show="showAddProject" class="button-new-tag" size="small" v-on:click="showAddProject = false">隐藏</el-button>*@
         </el-form-item>
         <el-form-item label="图纸用途" required="required">
             <el-select v-model="ruleForm.ProjectType">
@@ -106,7 +104,7 @@
             </el-upload>
         </el-form-item>
 
-        <el-form-item label="上传其他附件">
+        <el-form-item label="上传其他附件" required="required">
             <el-upload class="upload-demo"
                        drag
                        :file-list="fileList"
@@ -125,11 +123,10 @@
         <!--添加审批人-->
         <sam-approver-list :nodeList="nodeList" :nodedata="nodeInfo" :single="true" :special-roles="specialRoles" :special-role-names="specialRoleNames">
         </sam-approver-list>
-        <!--添加抄送人-->
-        @*<sam-addapprover :preset="preCopy" :approvers="ruleForm.copyers">
-        </sam-addapprover>*@
         <el-form-item>
             <el-button type="primary" v-on:click="onSubmit('ruleForm')" :disabled="disablePage">提交</el-button>
+            <el-button v-on:click="resetForm('ruleForm')">重置</el-button>
+            @*<el-button v-on:click="downLoad">下载</el-button>*@
         </el-form-item>
     </el-form>
 </el-main>
@@ -214,7 +211,7 @@
             //提交审批
             onSubmit(formName) {
                 var that = this
-                that.fileListToUrl()
+                this.fileListToUrl()
                 this.$refs[formName].validate((valid) => {
                     if (valid && this.data.length > 0) {
                         that.disablePage = true
@@ -237,7 +234,7 @@
                                 }
                             });
                             that.disablePage = false
-                            return
+                            return 
                         }
                         paramArr.push({
                             "ApplyMan": DingData.nickName,
@@ -262,20 +259,20 @@
                             "ProjectType": that.ruleForm.ProjectType,
                             "ProjectId": that.ruleForm.ProjectId,
                             "PdfState": stateArr.join(',')
-                        })
+                        }) 
                         for (let node of that.nodeList) {
-                            if (this.specialRoleNames.indexOf(node.NodeName) >= 0) {
+                            if (this.specialRoleNames.indexOf(node.NodeName)>=0) {
                                 console.log(node)
                                 console.log(node.AddPeople)
                                 if (!that.preApprove && node.AddPeople.length == 0) {
                                     this.$alert('您尚未选择审批人', '提交错误', {
                                         confirmButtonText: '确定',
                                         callback: action => {
-
+                                            
                                         }
                                     });
                                     that.disablePage = false
-                                    return
+                                    return 
                                 }
                                 for (let a of node.AddPeople) {
                                     paramArr.push({
@@ -293,7 +290,7 @@
                                 }
                             }
                         }
-                        this.PostData('FlowInfoNew/CreateTaskInfo', paramArr, (res) => {
+                        that.PostData('FlowInfoNew/CreateTaskInfo', paramArr, (res) => {
                             this.bindData(res)
                         })
                     } else {
@@ -304,6 +301,19 @@
                         return false;
                     }
                 });
+            },
+            downLoad() {
+                var that = this
+                let url = '123.PDF'
+                url = '/NewsAndCases/DownloadFile'
+                that._postData(url, function (result) {
+                    console.log(result.data.replace("application/pdf", "pdf/octet-stream"))
+                    window.location.href = result.data.replace("application/pdf", "pdf/octet-stream")
+                    
+                }, {
+                        FileName: '123.pdf',
+                        FilePath:'~/UploadFile/PDF/123.PDF'
+                    })
             },
             //bom表格翻页
             handleBomPageChange(page, index) {
@@ -368,9 +378,8 @@
                     } else {
                         if (data['Column1'] && data['Column1'] != "") {
                             this.dataArr[this.bomIndex].data.push(data)
-                            this.data.push(data)
+                            this.data.push(data) 
                             upBom.push({
-                                //TaskId: 196,//11111
                                 BomId: BomId,
                                 DrawingNo: data.Column1,
                                 Name: data.Column2,
@@ -386,12 +395,7 @@
                         }
                     }
                 }
-                //this.PostData('DrawingUploadNew/ChangeBom', upBom, (res) => {
-                    
-                //})
-                //console.log('~~~~~~')
-                //console.log(upBom)
-                //return
+                console.log(tableData)
                 //this.totalRows = this.data.length
                 this.dataArr[this.bomIndex].totalRows = this.dataArr[this.bomIndex].data.length
                 this.getData()
@@ -403,7 +407,7 @@
             beforeRemove(file, fileList) {
                 return this.$confirm(`确定移除 ${file.name}？`);
             },
-
+            
             handleFileRemove(file, fileList) {
                 this.isPdfFile ? this.pdfList = _cloneArr(fileList) : this.fileList = _cloneArr(fileList)
             },
@@ -439,25 +443,60 @@
                     }
                 })
             },
-
-            beforeExcelUpload(file) {
-                console.log('before excel')
+            
+            //PDF上传处理方法
+            beforePdfFileUpload(file) {
+                console.log('before pdf')
                 console.log(file)
-                const isExcel = file.name.substr(-3) == 'xls'
-                const isLt2M = file.size / 1024 / 1024 < 2
-                if (!isExcel) {
-                    this.$message.error('上传图片只能是 excel 文件!')
+                for (let f of this.fileList) {
+                    if (f.name == file.name) {
+                        this.$alert('不能上传相同名称文件', '上传失败', {
+                            confirmButtonText: '确定',
+                        });
+                        return false
+                    }
+                }
+                for (let f of this.pdfList) {
+                    if (f.name == file.name) {
+                        this.$alert('不能上传相同名称文件', '上传失败', {
+                            confirmButtonText: '确定',
+                        });
+                        return false
+                    }
+                }
+                if (file.name.indexOf(' ') >= 0) {
+                    this.$alert('文件名不能带空格', '上传失败', {
+                        confirmButtonText: '确定',
+                    });
+                    return false
+                }
+                file.name = 'helloWorld'
+                isPdf = true
+                const isPdfType = file.type === 'application/pdf'
+                const isLt2M = file.size / 1024 / 1024 < 10
+                if (!isPdfType) {
+                    this.$message.error('上传图片只能是 PDF 格式!')
                     return false
                 }
                 if (!isLt2M) {
-                    this.$message.error('上传图片大小不能超过 2MB!')
+                    this.$message.error('上传文件大小不能超过 10MB!')
                     return false
                 }
+                this.isPdfFile = true
                 return true
             },
+            
             beforeFileUpload(file) {
                 console.log('before file')
                 console.log(file)
+                for (let f of this.fileList) {
+                    if (f.name == file.name) {
+                        this.$alert('不能上传相同名称文件', '上传失败', {
+                            confirmButtonText: '确定',
+                        });
+                        return false
+                    }
+                }
                 for (let f of this.pdfList) {
                     if (f.name == file.name) {
                         this.$alert('不能上传相同名称文件', '上传失败', {
@@ -482,36 +521,11 @@
                 this.isPdfFile = false
                 return true
             },
-            beforePdfFileUpload(file) {
-                console.log(file)
-                for (let f of this.fileList) {
-                    if (f.name == file.name) {
-                        this.$alert('不能上传相同名称文件', '上传失败', {
-                            confirmButtonText: '确定',
-                        });
-                        return false
-                    }
-                }
-                file.name = 'helloWorld'
-                isPdf = true
-                const isPdfType = file.type === 'application/pdf'
-                const isLt2M = file.size / 1024 / 1024 < 10
-                if (!isPdfType) {
-                    this.$message.error('上传图片只能是 PDF 格式!')
-                    return false
-                }
-                if (!isLt2M) {
-                    this.$message.error('上传文件大小不能超过 10MB!')
-                    return false
-                }
-                this.isPdfFile = true
-                return true
-            },
             handlePictureCardPreview(file) {
                 this.dialogImageUrl = file.url;
                 this.dialogVisible = true;
             },
-
+            
             //加载重新发起审批传递的数据
             loadReApprovalData() {
                 if (!ReApprovalTempData.valid) return
@@ -525,7 +539,7 @@
                 var preUrl = 'http://' + window.location.host
                 for (let f of this.fileList) {
                     f["response"] = {
-                        Content: f.url.replace(preUrl, '~')
+                        Content: f.url.replace(preUrl,'~')
                     }
                 }
                 for (let p of this.pdfList) {
@@ -546,7 +560,7 @@
                     console.log(upBom)
                 }
             }
-
+            
         },
         created: function () {
             //FlowId = 8
@@ -565,8 +579,8 @@
 </script>
 
 <style>
-    .upload-demo {
-        width: 400px;
+    .upload-demo{
+        width:400px;
     }
 </style>
 
