@@ -339,6 +339,7 @@
     <Compile Include="Bussiness\FlowInfo\FlowInfoServer.cs" />
     <Compile Include="Bussiness\Word\WordHelper.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\BorrowController.cs" />
     <Compile Include="Controllers\CarManangerController.cs" />
     <Compile Include="Controllers\CarTableController.cs" />
     <Compile Include="Controllers\ContractManagerController.cs" />
@@ -358,6 +359,7 @@
     <Compile Include="Controllers\LoginMobileController.cs" />
     <Compile Include="Controllers\MainController.cs" />
     <Compile Include="Controllers\ApprovalController.cs" />
+    <Compile Include="Controllers\MaintainController.cs" />
     <Compile Include="Controllers\NewsAndCaseManageController.cs" />
     <Compile Include="Controllers\OfficeSuppliesManageController.cs" />
     <Compile Include="Controllers\OfficeSuppliesPurchaseManagerController.cs" />
@@ -411,10 +413,12 @@
     <Compile Include="Models\DepartmentUser.cs" />
     <Compile Include="Models\DepartmentUserResponseModel.cs" />
     <Compile Include="Models\DeptModel.cs" />
+    <Compile Include="Models\DingModels\Borrow.cs" />
     <Compile Include="Models\DingModels\CreateProject.cs" />
     <Compile Include="Models\DingModels\DrawingChange.cs" />
     <Compile Include="Models\DingModels\FileChange.cs" />
     <Compile Include="Models\DingModels\GoDown.cs" />
+    <Compile Include="Models\DingModels\Maintain.cs" />
     <Compile Include="Models\DingModels\PicInfo.cs" />
     <Compile Include="Models\DingModels\Contract.cs" />
     <Compile Include="Models\DingModels\KisOffice.cs" />

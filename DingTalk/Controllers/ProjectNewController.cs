@@ -268,7 +268,7 @@ namespace DingTalk.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("DownLoad")]
-        public async Task<System.Net.Http.HttpResponseMessage> DownLoad(string path)
+        public async Task<HttpResponseMessage> DownLoad(string path)
         {
             try
             {
@@ -303,6 +303,7 @@ namespace DingTalk.Controllers
         {
             TopSDKTest top = new TopSDKTest();
             OATextModel oaTextModel = new OATextModel();
+
             oaTextModel.head = new head
             {
                 //bgcolor = "FFBBBBBB",

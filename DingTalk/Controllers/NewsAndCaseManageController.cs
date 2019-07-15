@@ -36,6 +36,8 @@ namespace DingTalk.Controllers
             try
             {
                 EFHelper<NewsAndCases> eFHelper = new EFHelper<NewsAndCases>();
+                newsAndCases.CreateTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
                 eFHelper.Add(newsAndCases);
                 return new NewErrorModel()
                 {
@@ -181,7 +183,7 @@ namespace DingTalk.Controllers
         }
 
         /// <summary>
-        /// 拷贝文件到华数项目下
+        /// 拷贝文件到研究院项目下
         /// </summary>
         /// <param name="picPath">文件路径</param>
         /// <returns></returns>
@@ -278,6 +280,10 @@ namespace DingTalk.Controllers
         }
 
 
+
+
+
+
         /// <summary>
         /// 推送所有图纸数据和附件数据
         /// </summary>
@@ -309,22 +315,32 @@ namespace DingTalk.Controllers
                     if (FilePDFUrl.Length > 0)
                     {
                         List<string> ListPath = new List<string>(FilePDFUrl);
-                        List<string> ListAbPath = new List<string>();
-
+                        //List<string> ListAbPath = new List<string>();
+                        List<string> ListNewPath = new List<string>();
                         int iCount = 12;  //设置每个文件夹最大文件数量
                         int i = 0;
                         foreach (var item in ListPath)
                         {
-                            if (ListAbPath.Count < iCount)
+                            if (ListNewPath.Count < iCount)
                             {
-                                ListAbPath.Add(HttpContext.Current.Server.MapPath(item));
+                                string newPathName = (HttpContext.Current.Server.MapPath(item).Substring(0, HttpContext.Current.Server.MapPath(item).Length - 18)) +
+                                 System.IO.Path.GetExtension(HttpContext.Current.Server.MapPath(item));
+                                File.Copy(HttpContext.Current.Server.MapPath(item), newPathName, true);
+
+                                ListNewPath.Add(newPathName);
+                                //ListNewPath.Add(HttpContext.Current.Server.MapPath(item));
                             }
-                            if (ListAbPath.Count == iCount || ListPath.IndexOf(item) == ListPath.Count - 1)
+                            if (ListNewPath.Count == iCount || ListPath.IndexOf(item) == ListPath.Count - 1)
                             {
                                 i++;
-                                string SavePath = string.Format(@"{0}\UploadFile\Ionic\{1}.zip", AppDomain.CurrentDomain.BaseDirectory, "流水号" + taskId + "图纸打包第" + i + "份" + DateTime.Now.ToString("yyyyMMddHHmmss"));
+                                string SavePath = string.Format(@"{0}\UploadFile\Ionic\{1}.zip",
+                                    AppDomain.CurrentDomain.BaseDirectory,
+                                     "流水号" + taskId + "图纸打包第" + i + "份" +
+                                     DateTime.Now.ToString("yyyyMMddHHmmss"));
+
                                 //文件压缩打包
-                                IonicHelper.CompressMulti(ListAbPath, SavePath, false);
+                                IonicHelper.CompressMulti(ListNewPath, SavePath, false);
+
                                 //FileStream filestream = new FileStream((SavePath), FileMode.Open);
                                 //byte[] bt = new byte[filestream.Length];
                                 ////调用read读取方法
@@ -339,16 +355,30 @@ namespace DingTalk.Controllers
 
                                 DingTalkServersController dingTalkServersController = new DingTalkServersController();
                                 SavePath = "~\\" + FileHelper.RelativePath(HttpContext.Current.Server.MapPath("~/"), SavePath);
+
+
+
                                 //上盯盘
                                 var resultUploadMedia = await dingTalkServersController.UploadMedia(SavePath);
                                 //推送用户
                                 FileSendModel fileSendModel = JsonConvert.DeserializeObject<FileSendModel>(resultUploadMedia);
                                 fileSendModel.UserId = applyManId;
                                 var result = await dingTalkServersController.SendFileMessage(fileSendModel);
-                                ListAbPath.Clear();
+
+                                if (ListNewPath.Count > 0)
+                                {
+                                    //ListNewPath.Add(SavePath);
+                                    foreach (var items in ListNewPath)
+                                    {
+                                        File.Delete(items);
+                                    }
+                                }
+
+                                ListNewPath.Clear();
                             }
                         }
                     }
+
 
                     return new NewErrorModel()
                     {
