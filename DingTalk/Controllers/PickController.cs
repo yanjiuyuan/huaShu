@@ -119,7 +119,7 @@ namespace DingTalk.Controllers
                 //   keyValuePairs);
 
 
-                HttpWebResponse httpWebResponse = CreateGetHttpResponse("http://wuliao5222.55555.io:35705/api/Pick/GetAll", 5000, null, null);
+                HttpWebResponse httpWebResponse = CreateGetHttpResponse("http://wuliao5222.55555.io:45578/api/Pick/GetAll", 5000, null, null);
 
                 StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
                 string content = reader.ReadToEnd();
