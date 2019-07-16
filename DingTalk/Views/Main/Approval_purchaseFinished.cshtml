@@ -9,25 +9,25 @@
         成品采购审批-{{nodeInfo.NodeName}}
     </div>
     <el-collapse v-model="activeNames">
-        <el-form :model="tableInfo" :rules="rules" ref="tableInfo" label-width="80px" class="demo-ruleForm"
+        <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="80px" class="demo-ruleForm"
                  id="uploadForm" enctype="multipart/form-data" style="margin-top:30px">
             <el-form-item label="标题">
-                <el-input v-model="tableInfo.Title" :disabled="true" style="width:80%"></el-input>
+                <el-input v-model="ruleForm.Title" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-form-item label="申请人">
-                <el-input v-model="tableInfo.ApplyMan" :disabled="true" style="width:80%"></el-input>
+                <el-input v-model="ruleForm.ApplyMan" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-form-item label="申请部门">
-                <el-input v-model="tableInfo.Dept" :disabled="true" style="width:80%"></el-input>
+                <el-input v-model="ruleForm.Dept" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-form-item label="合同名称">
-                <el-input v-model="tableInfo.ProjectName" :disabled="true" style="width:80%"></el-input>
+                <el-input v-model="ruleForm.ProjectName" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-form-item label="合同编号">
-                <el-input v-model="tableInfo.ProjectId" :disabled="true" style="width:80%"></el-input>
+                <el-input v-model="ruleForm.ProjectId" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-form-item label="备注">
-                <el-input v-model="tableInfo.Remark" :disabled="true" style="width:80%"></el-input>
+                <el-input v-model="ruleForm.Remark" :disabled="true" style="width:80%"></el-input>
             </el-form-item>
             <el-button type="primary" v-on:click="stampAndGet">盖章并获取</el-button>
             <el-button type="primary" v-on:click="printExcel">打印EXCEL</el-button>
@@ -116,7 +116,6 @@
                 index: Index,
                 nodeList: [],
                 nodeInfo: {},
-                tableInfo: {},
                 state: state,
                 codesInfo: {},
                 ruleForm: {
@@ -135,14 +134,14 @@
                     let url = '/Purchase/ModifyPurchaseTable'
                     that._postData(url, function (data) {
                         that.aggreSubmit({
-                            "Id": that.tableInfo.Id,
+                            "Id": that.ruleForm.Id,
                             "Remark": that.ruleForm.Mark
                         })
                     }, that.data)
                 }
                 else {
                     this.aggreSubmit({
-                        "Id": that.tableInfo.Id,
+                        "Id": that.ruleForm.Id,
                         "Remark": that.ruleForm.Mark
                     })
                 }

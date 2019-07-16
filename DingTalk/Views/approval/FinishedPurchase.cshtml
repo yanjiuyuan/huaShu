@@ -345,10 +345,11 @@
         created: function () {
             //FlowId = 6
             this.loadTempData()
-            this.getNodeInfo()
-            this.getContractData()
-            this.getApproInfo()
             this.loadReApprovalData()
+            this.getContractData()
+
+            this.getNodeInfo()
+            this.getApproInfo()
             loadHtml("mainPage", "partPage")
         }
     })
