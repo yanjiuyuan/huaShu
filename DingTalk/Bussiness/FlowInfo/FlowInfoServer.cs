@@ -96,6 +96,28 @@ namespace DingTalk.Bussiness.FlowInfo
             return ListTaskFinall;
         }
 
+        /// <summary>
+        /// 返回已审批完成的任务流
+        /// </summary>
+        /// <param name="FlowName"></param>
+        /// <returns></returns>
+        public static List<Tasks> ReturnUnFinishedTaskIdByFlowName(string FlowName)
+        {
+            List<Tasks> ListTaskFinall = new List<Tasks>();
+            using (DDContext context = new DDContext())
+            {
+                string FlowId = context.Flows.Where(t=>t.FlowName== FlowName).FirstOrDefault().FlowId.ToString();
+                List<Tasks> ListTask = context.Tasks.Where(u => u.State == 0 && u.IsSend != true && u.FlowId.ToString() == FlowId).ToList();
+                List<Tasks> ListTaskFinished = context.Tasks.Where(u => u.State == 1 && u.IsBacked != true && u.FlowId.ToString() == FlowId).ToList();
+
+                ListTaskFinall = (from tf in ListTaskFinished
+                                  where
+                                !(from t in ListTask select t.TaskId).Contains(tf.TaskId)
+                                  select tf).ToList();
+            }
+            return ListTaskFinall;
+        }
+
 
         /// <summary>
         /// 修改任务流状态
