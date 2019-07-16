@@ -8,7 +8,6 @@
         <i class="el-icon-arrow-left"></i>
         零部件采购审批-{{nodeInfo.NodeName}}
     </div>
-    <el-collapse v-model="activeNames">
         @*<el-collapse-item v-for="(d,i) in data" :name="i+1" :key="i">*@
         <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="80px" class="demo-ruleForm"
                  id="uploadForm" enctype="multipart/form-data" style="margin-top:30px">
@@ -32,47 +31,33 @@
             </el-form-item>
             <el-button type="primary" v-on:click="StampAndGet">盖章并获取</el-button>
             <el-button type="primary" v-on:click="PrintExcel">打印EXCEL</el-button>
-        </el-form>
-
-        <el-table :data="data" border style="width: 100%;margin-bottom:30px">
-            <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
-            <el-table-column prop="Name" label="物料名称"></el-table-column>
-            <el-table-column prop="Standard" label="规格型号"></el-table-column>
-            <el-table-column prop="Price" label="预计单价"></el-table-column>
-            <el-table-column prop="Unit" label="单位"></el-table-column>
-            <el-table-column prop="Count" label="数量"></el-table-column>
-            <el-table-column prop="UrgentDate" label="需用日期"></el-table-column>
-            <el-table-column prop="SendPosition" label="送货地点"></el-table-column>
-            <el-table-column prop="Purpose" label="用途"></el-table-column>
-            <el-table-column prop="Mark" label="备注"></el-table-column>
-            <el-table-column label="采购员" v-if="NodeId == 5">
-                <template slot-scope="scope">
-                    <el-select v-model="scope.row.PurchaseManId" placeholder="请选择" v-on:change="choosePeople">
-                        <el-option v-for="item in options"
-                                   :key="item.emplId"
-                                   :label="item.name"
-                                   :value="item.emplId">
-                        </el-option>
-                    </el-select>
-                </template>
-            </el-table-column>
-        </el-table>
-        @*<el-table-column prop="Price" label="实际单价" v-if="NodeId == 2">
-                <template slot-scope="scope">
-                    <el-input v-model="scope.row.Price"
-                              :class="{ redborder:scope.row.Price == '' || scope.row.Price == null}"></el-input>
-                </template>
-            </el-table-column>*@
-
-        @*</el-collapse-item>*@
-    </el-collapse>
-
-    <el-form :model="ruleForm2" :rules="rules" :inline="true" ref="ruleForm" label-width="120px" class="demo-ruleForm">
-        <!--添加审批人-->
+            <el-table :data="data" border style="width: 100%;margin-bottom:30px">
+                <el-table-column prop="CodeNo" label="物料编码"></el-table-column>
+                <el-table-column prop="Name" label="物料名称"></el-table-column>
+                <el-table-column prop="Standard" label="规格型号"></el-table-column>
+                <el-table-column prop="Price" label="预计单价"></el-table-column>
+                <el-table-column prop="Unit" label="单位"></el-table-column>
+                <el-table-column prop="Count" label="数量"></el-table-column>
+                <el-table-column prop="UrgentDate" label="需用日期"></el-table-column>
+                <el-table-column prop="SendPosition" label="送货地点"></el-table-column>
+                <el-table-column prop="Purpose" label="用途"></el-table-column>
+                <el-table-column prop="Mark" label="备注"></el-table-column>
+                <el-table-column label="采购员" v-if="NodeId == 5">
+                    <template slot-scope="scope">
+                        <el-select v-model="scope.row.PurchaseManId" placeholder="请选择" v-on:change="choosePeople">
+                            <el-option v-for="item in options"
+                                       :key="item.emplId"
+                                       :label="item.name"
+                                       :value="item.emplId">
+                            </el-option>
+                        </el-select>
+                    </template>
+                </el-table-column>
+            </el-table>
         <sam-approver-list :nodeList="nodeList" :single="true" :nodedata="nodeInfo"></sam-approver-list>
         <template v-if="index==0">
             <el-form-item label="审批意见" prop="mark">
-                <el-input v-model="ruleForm2.Mark" style="width:400px;"></el-input>
+                <el-input v-model="ruleForm.Mark" style="width:400px;"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" v-on:click="onSubmit" :disabled="disablePage">同意</el-button>
@@ -94,7 +79,6 @@
 </el-main>
 
 <script>
-    var allData = {}
     var state = ''
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
@@ -112,16 +96,12 @@
             return {
                 data: [],
                 NodeId: NodeId,
-                activeNames: [1, 2, 3, 4, 5, 6],
                 index: Index,
                 nodeList: [],
                 nodeInfo: {},
                 ruleForm: {},
                 codesInfo: {},
                 state: state,
-                ruleForm2: {
-                    Mark: ''
-                },
                 options: [],
                 emplId: ''
             }
@@ -138,14 +118,14 @@
                     that._postData(url, function (data) {
                         that.aggreSubmit({
                             "Id": that.ruleForm.Id,
-                            "Remark": that.ruleForm2.Mark
+                            "Remark": that.ruleForm.Mark
                         })
                     }, that.data)
                 }
                 else {
                     this.aggreSubmit({
                         "Id": that.ruleForm.Id,
-                        "Remark": that.ruleForm2.Mark
+                        "Remark": that.ruleForm.Mark
                     })
                 }
             },
@@ -193,24 +173,6 @@
                         }
                     }
                 }
-            },
-            //退回审批
-            returnBk() {
-                let param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm2.Mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm2.mark
-                }
-                this.returnSubmit(param)
             },
             StampAndGet() {
                 this.stampAndGet()

@@ -148,7 +148,6 @@
         Index = UrlObj.index
     }
     $("#mask").hide()
-    var allData = {}
     var imageList = []
     var fileList = []
     var dataArr = []
@@ -226,7 +225,7 @@
                         console.log(paramArr)
                         that._postData(url2, function () {
                             that.aggreSubmit({
-                                "Id": allData.Id,
+                                "Id": that.ruleForm.Id,
                                 "Remark": that.ruleForm.mark
                             })
                         }, paramArr
@@ -237,21 +236,11 @@
                 }
                 else {
                     that.aggreSubmit({
-                        "Id": allData.Id,
+                        "Id": that.ruleForm.Id,
                         "Remark": that.ruleForm.mark
                     })
                 }
 
-            },
-            //退回审批
-            reSubmit() {
-                this.disablePage = true
-                var that = this
-                var param = {
-                    "Id": allData.Id,
-                    "Remark": that.ruleForm.mark
-                }
-                this.returnSubmit(param)
             },
             //重新发起审批
             reApproval() {

@@ -201,10 +201,10 @@ function getFormData(demo) {
         imageList = []
         fileList = []
         pdfList = []
-        allData = res
         handleUrlData(res, demo)
-        taskId = allData.TaskId
-        demo.ruleForm = allData
+        taskId = res.TaskId
+        demo.ruleForm = res
+        allData = res
         demo.getNodeInfo()
         demo.GetDingList(taskId)
         demo.getApproInfo()
@@ -612,6 +612,23 @@ var mixin = {
             })
         },
         //退回审批
+        returnBk() {
+            let param = {
+                "Id": this.ruleForm.Id,
+                "Remark": this.ruleForm.Mark
+            }
+            this.returnSubmit(param)
+        },
+        //撤回审批
+        rebackSubmit() {
+            this.disablePage = true
+            var param = {
+                "Id": this.ruleForm.Id,
+                "NodeId": 0,
+                "Remark": this.ruleForm.Mark
+            }
+            this.returnSubmit(param)
+        },
         returnSubmit(option) {
             this.disablePage = true
             var that = this

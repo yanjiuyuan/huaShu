@@ -11,7 +11,7 @@
     <el-form :model="ruleForm" :rules="rules" :inline="true" ref="ruleForm" label-width="120px" class="demo-ruleForm">
 
         <el-form-item label="标题">
-            <el-input v-model="allData.Title" :disabled="true" style="width:90%;"></el-input>
+            <el-input v-model="ruleForm.Title" :disabled="true" style="width:90%;"></el-input>
         </el-form-item>
         <el-form-item label="加班事由" prop="OverTimeContent">
             <el-input v-model="ruleForm.OverTimeContent" :disabled="true" style="width:90%;"></el-input>
@@ -83,7 +83,6 @@
 </el-main>
 
 <script>
-    var allData = {}
     var Index = ''
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
@@ -97,7 +96,6 @@
         mixins: [mixin],
         data: function () {
             return {
-                allData: allData,
                 index: Index,
                 nodeList: [],
                 nodeInfo: {},
@@ -121,30 +119,13 @@
                         that._postData(url, function () {
 
                             that.aggreSubmit({
-                                "Id": allData.Id,
+                                "Id": that.ruleForm.Id,
                                 "Remark": that.ruleForm.Mark
                             })
 
                         }, param)
                     }
                 })
-            },
-            returnBk() {
-                let param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm.Mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
             },
             getTable() {
                 var that = this

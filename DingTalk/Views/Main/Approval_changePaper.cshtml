@@ -242,7 +242,6 @@
         NeedTime: '需用日期',
         Mark: '备注'
     }
-    var allData = {}
     var FilePDFUrl = ''
     var dataArr = [
         {
@@ -303,7 +302,7 @@
                     console.log(JSON.stringify(DrawingChangeList))
                     this.PostData('DrawingChange/ChangeBom', DrawingChangeList, (res) => {
                         this.aggreSubmit({
-                            "Id": allData.Id,
+                            "Id": this.ruleForm.Id,
                             "Remark": this.ruleForm.mark,
                             "Title": this.ruleForm.Title,
                             "ProjectId": this.ruleForm.ProjectId
@@ -312,28 +311,9 @@
                     return
                 }
                 this.aggreSubmit({
-                    "Id": allData.Id,
+                    "Id": this.ruleForm.Id,
                     "Remark": this.ruleForm.mark
                 })
-            },
-            //退回审批
-            reSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
             },
             print() {
                 FilePDFUrl = FilePDFUrl.replace(/\\/g, '\\\\')

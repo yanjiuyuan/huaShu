@@ -9,7 +9,6 @@
         办公用品采购审批-{{nodeInfo.NodeName}}
     </div>
 
-
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="120px" class="demo-ruleForm">
         <el-form-item label="标题">
             <el-input v-model="ruleForm.Title" :disabled="true"></el-input>
@@ -40,13 +39,11 @@
                 </el-table>
             </el-collapse-item>
         </el-collapse>
-    </el-form>
-    <el-form :model="ruleForm2" :rules="rules" :inline="true" ref="ruleForm" label-width="120px" class="demo-ruleForm">
         <!--添加审批人-->
         <sam-approver-list :nodeList="nodeList" :single="true" :nodedata="nodeInfo"></sam-approver-list>
         <template v-if="index==0">
             <el-form-item label="审批意见" prop="mark">
-                <el-input v-model="ruleForm2.Mark" style="width:400px;"></el-input>
+                <el-input v-model="ruleForm.Mark" style="width:400px;"></el-input>
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" v-on:click="onSubmit" :disabled="disablePage">同意</el-button>
@@ -68,7 +65,6 @@
 </el-main>
 
 <script>
-    var allData = {}
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
         NodeId = UrlObj.nodeid
@@ -90,18 +86,15 @@
                 index: Index,
                 nodeList: [],
                 nodeInfo: {},
-                totalPrice: 0,
-                ruleForm2: {
-                    Mark: ''
-                }
+                totalPrice: 0
             }
         },
         methods: {
             onSubmit(formName) {
                 console.log('submit!')
                 this.aggreSubmit({
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm2.Mark
+                    "Id": this.ruleForm.Id,
+                    "Remark": this.ruleForm.Mark
                 })
                 return
                 var that = this
@@ -124,35 +117,17 @@
                     console.log(JSON.stringify(param))
                     that._postData(url, function (data) {
                         that.aggreSubmit({
-                            "Id": allData.Id,
-                            "Remark": that.ruleForm2.Mark
+                            "Id": this.ruleForm.Id,
+                            "Remark": that.ruleForm.Mark
                         })
                     }, param)
                 }
                 else {
                     this.aggreSubmit({
-                        "Id": allData.Id,
-                        "Remark": this.ruleForm2.Mark
+                        "Id": this.ruleForm.Id,
+                        "Remark": this.ruleForm.Mark
                     })
                 }
-            },
-            returnBk() {
-                let param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm2.Mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var that = this
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm2.mark
-                }
-                this.returnSubmit(param)
             },
             //打印表单
             printTable() {
