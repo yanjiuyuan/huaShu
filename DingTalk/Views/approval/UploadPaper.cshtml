@@ -319,6 +319,7 @@
             handleBomPageChange(page, index) {
                 console.log(page)
                 console.log(index)
+                this.data = this.dataArr[index].data
                 this.currentPage = page
                 this.dataArr[index].currentPage = page
                 this.getData()
