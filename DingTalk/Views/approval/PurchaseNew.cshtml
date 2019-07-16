@@ -95,7 +95,6 @@
         </el-table-column>
         <el-table-column label="操作" width="80">
             <template slot-scope="scope">
-                @*<el-button size="mini" v-on:click="showEditGood(scope.$index, scope.row)">编辑</el-button>*@
                 <el-button size="mini" type="danger" v-on:click="deleteGood(scope.$index, scope.row)">删除</el-button>
             </template>
         </el-table-column>
@@ -104,9 +103,6 @@
     <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm"
              id="uploadForm" enctype="multipart/form-data">
 
-        @*<el-form-item label="预计总价">
-            <el-input v-model="totalPrice" :disabled="true"></el-input>
-        </el-form-item>*@
         <el-form-item label="标题" prop="Title">
             <el-input v-model="ruleForm.Title"></el-input>
         </el-form-item>
@@ -115,10 +111,10 @@
         </el-form-item>
 
         <el-form-item label="项目名" prop="ProjectId">
-            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
+            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;" v-on:change="selectProject">
                 <el-option v-for="item in projectList"
                            :key="item.ProjectId"
-                           :label="item.ProjectName + ' -编号: ' + item.ContractNo"
+                           :label="item.ProjectName + ' -编号: ' + item.ProjectId"
                            :value="item.ProjectId">
                     <span style="float: left">{{ item.ProjectName }}  -编号: {{item.ProjectId}}</span>
                     <span style="float: right; color: #8492a6; font-size: 13px"></span>
@@ -189,14 +185,7 @@
                         return
                     }
                 }
-                
                 var that = this
-                var ProjectName
-                for (let p of that.projectList) {
-                    if (p.ProjectId == that.ruleForm.ProjectId) {
-                        ProjectName = p.ProjectName
-                    }
-                }
                 let url = '/Purchase/SavePurchaseTable'
                 let callBack = function (taskId) {
                     console.log(taskId)
@@ -206,7 +195,6 @@
                         param.push(p)
                     }
                     console.log(JSON.stringify(param))
-
                     that._postData(url, function (data) {
                         that.$alert('恭喜提交成功', '提示信息', {
                             confirmButtonText: '确定',
@@ -219,7 +207,7 @@
                 that.approvalSubmit(formName, {
                     Title: that.ruleForm.Title,
                     Remark: that.ruleForm.remark,
-                    ProjectName: ProjectName,
+                    ProjectName: that.ruleForm.ProjectName,
                     ProjectId: that.ruleForm.ProjectId
                 }, callBack)
             },
@@ -229,26 +217,6 @@
                 this.ruleForm.Title = ReApprovalTempData.Title
                 ReApprovalTempData.valid = false
                 this.purchaseList = ReApprovalTempData.data
-            },
-            //搜索物料列表
-            searchCode(formName) {
-                var that = this
-                if (!this.searchForm.name) return
-                //this.$refs[formName].validate((valid) => {
-                //    if (valid) {
-                var url = '/Purchase/GetICItem?Key=' + that.searchForm.name
-                $.ajax({
-                    url: url,
-                    success: function (data) {
-                        console.log(url)
-                        console.log("搜索物料列表ok")
-                        data = JSON.parse(data)
-                        console.log(data)
-                        that.data = data
-                        that.totalRows = data.length
-                        that.getData()
-                    }
-                })
             },
             //添加申请物料
             addGood(index, good) {
@@ -275,23 +243,6 @@
             deleteGood(index, good) {
                 this.purchaseList.splice(index, 1)
             },
-            //编辑审批物料
-            showEditGood(index, good) {
-                this.dialogFormVisible = true
-                this.good = $.extend({}, good)
-                this.good.index = index
-            },
-            editGood() {
-                this.dialogFormVisible = false
-                let tmpGood = $.extend({}, this.good)
-                if (tmpGood.UrgentDate) tmpGood.UrgentDate = _dateToString(tmpGood.UrgentDate)
-                this.purchaseList[this.good.index] = tmpGood
-                let tmpArr = _cloneArr(this.purchaseList)
-                this.purchaseList = tmpArr
-                console.log('done eidt')
-                console.log(this.good.index)
-                console.log(this.purchaseList)
-            },
             //显示临时保存数据
             saveTempData() {
                 setLocalObj('officeSupplies', this.purchaseList)
@@ -303,15 +254,6 @@
                 console.log(data)
                 if (data && data.length && data.length > 0) this.purchaseList = data
                 localStorage.removeItem('officeSupplies')
-            }
-        },
-        computed: {
-            totalPrice: function () {
-                var totalPrice = 0
-                for (let p of this.purchaseList) {
-                    totalPrice = totalPrice + p.Price * p.Count
-                }
-                return totalPrice
             }
         },
         created: function () {
