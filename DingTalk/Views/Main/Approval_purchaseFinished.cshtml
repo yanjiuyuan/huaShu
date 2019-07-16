@@ -96,7 +96,6 @@
 </el-main>
 
 <script>
-    var allData = {}
     var state = ''
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
@@ -195,23 +194,6 @@
                         }
                     }
                 }
-            },
-            returnBk() {
-                let param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm.Mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
             },
             getBomInfo() {
                 var that = this

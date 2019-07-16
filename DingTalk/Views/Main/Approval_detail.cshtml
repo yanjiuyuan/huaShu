@@ -277,7 +277,6 @@
     }
     $("#mask").hide()
     var items = {}
-    var allData = {}
 
     var FileUrl = ''
     var bomUrl = ''
@@ -430,34 +429,13 @@
             onSubmit(formName) {
                 this.disablePage = true
                 this.aggreSubmit({
-                    "Id": allData.Id,
+                    "Id": this.ruleForm.Id,
                     "Remark": this.ruleForm.mark,
                     "Title": this.ruleForm.Title,
                     "ProjectId": this.ruleForm.ProjectId
                 }, {
                         "ProjectId": this.ruleForm.ProjectId
                     })
-            },
-            //退回审批
-            reSubmit() {
-                this.disablePage = true
-                var that = this
-                var param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var that = this
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
             },
             //图纸盖章并获取文件
             stampAndGet() {

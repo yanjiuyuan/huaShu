@@ -77,7 +77,6 @@
 </el-main>
 
 <script>
-    var allData = {}
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
         NodeId = UrlObj.nodeid
@@ -118,38 +117,15 @@
                 this._postData(url, function () {
 
                     that.aggreSubmit({
-                        "Id": allData.Id,
+                        "Id": that.ruleForm.Id,
                         "Remark": that.ruleForm.Mark
                     })
 
                 },param)
 
             },
-            returnBk() {
-                let param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm.Mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
-            },
             getUseCarTable() {
                 var that = this
-            
-                let handle = function (data) {
-                    that.totalRows = data.length
-                    that.data = data
-                    that.getData()
-                }
                 this.disablePage = true
                 this._getData("/CarMananger/Quary", function (data) {
                         that.carList = data

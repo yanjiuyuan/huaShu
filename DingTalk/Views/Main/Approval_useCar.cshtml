@@ -100,7 +100,6 @@
 </el-main>
 
 <script>
-    var allData = {}
     var imageList = []
     if (UrlObj.flowid) {
         FlowId = UrlObj.flowid
@@ -146,30 +145,13 @@
                 param.UseKilometres = this.UseKilometres
                 this._postData(url, function () {
                     that.aggreSubmit({
-                        "Id": allData.Id,
+                        "Id": that.ruleForm.Id,
                         "Remark": that.ruleForm.Mark,
                         "ImageUrl": that.ruleForm.ImageUrl,
                         "OldImageUrl": that.ruleForm.OldImageUrl
                     })
                 },param)
 
-            },
-            returnBk() {
-                let param = {
-                    "Id": allData.Id,
-                    "Remark": this.ruleForm.Mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": allData.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
             },
             getUseCarTable() {
                 var that = this

@@ -79,7 +79,6 @@
         Id = UrlObj.id
         Index = UrlObj.index
     }
-    var allData = {}
     var items = {
         fNumber: '物料编码',
         fName: '物料名称',
@@ -121,25 +120,6 @@
                     "Id": this.ruleForm.Id,
                     "Remark": this.ruleForm.mark
                 })
-            },
-            //退回审批
-            reSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": this.ruleForm.Id,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
-            },
-            //撤回审批
-            rebackSubmit() {
-                this.disablePage = true
-                var param = {
-                    "Id": this.ruleForm.Id,
-                    "NodeId": 0,
-                    "Remark": this.ruleForm.mark
-                }
-                this.returnSubmit(param)
             },
             //重新发起审批
             reApproval() {
