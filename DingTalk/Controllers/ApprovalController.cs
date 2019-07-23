@@ -45,7 +45,7 @@ namespace WebZhongZhi.Controllers
         {
             return View();
         }
-        public ActionResult ProjectManager()
+        public ActionResult ProjectManager() 
         {
             return View();
         }

@@ -202,8 +202,8 @@
                 var ifTrue = false
 
                 var nodeListNew = []
-                this._getData("/FlowInfo/GetSign", function (data) {
-                    nodeListNew = data
+                this._getData("/FlowInfoNew/GetSign", function (data) {
+                    nodeListNew = data.data
 
                     for (let node of nodeListNew) {
                         if (node.NodeId == 6 && node.ApplyManId == DingData.userid) {

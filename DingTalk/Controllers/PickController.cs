@@ -119,7 +119,7 @@ namespace DingTalk.Controllers
                 //   keyValuePairs);
 
 
-                HttpWebResponse httpWebResponse = CreateGetHttpResponse("http://wuliao5222.55555.io:45578/api/Pick/GetAll", 5000, null, null);
+                HttpWebResponse httpWebResponse = CreateGetHttpResponse("http://wuliao5222.55555.io:35705/api/Pick/GetAll", 5000, null, null);
 
                 StreamReader reader = new StreamReader(httpWebResponse.GetResponseStream(), Encoding.UTF8);
                 string content = reader.ReadToEnd();
@@ -389,9 +389,10 @@ namespace DingTalk.Controllers
                     List<Tasks> tasks = FlowInfoServer.ReturnUnFinishedTaskIdByFlowName("领料申请");
                     List<Tasks> tasksNew = tasks.Where(t => t.NodeId.ToString() == "0").ToList();
                     tasksNew = tasksNew.Where(t =>
-                     projectId == null ? 1 == 1 : t.ProjectId == projectId &&
-                    (startTime == null || endTime == null) ? 1 == 1 :
-                    DateTime.Parse(t.ApplyTime) > startTime && DateTime.Parse(t.ApplyTime) < endTime).ToList(); //过滤审批后的流程
+                    (t.ProjectId == projectId) &&
+                    //(projectId == null ? 1 == 1 : t.ProjectId == projectId) &&
+                    // (startTime == null || endTime == null) ? 1 == 1 :
+                    (DateTime.Parse(t.ApplyTime) > startTime && DateTime.Parse(t.ApplyTime) < endTime)).ToList(); //过滤审批后的流程
                     List<Roles> roles = context.Roles.Where(r => r.RoleName == "领料管理人员" && r.UserId == applyManId).ToList();
 
                     if (roles.Count > 0 ? true : false)  //领料管理员
