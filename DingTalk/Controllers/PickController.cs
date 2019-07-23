@@ -132,7 +132,7 @@ namespace DingTalk.Controllers
                 using (DDContext context = new DDContext())
                 {
                     List<GodownModel> goDowns = JsonConvert.DeserializeObject<List<GodownModel>>(newErrorModel.data.ToString()); ;
-                    Flows flows = context.Flows.Where(f => f.FlowName.Contains("零部件")).First();
+                    Flows flows = context.Flows.Where(f => f.FlowName.Contains("采购")).First();
                     List<Tasks> tasks = FlowInfoServer.ReturnUnFinishedTaskId(flows.FlowId.ToString());
                     List<Tasks> taskQuery = tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId == 1).ToList();
                     List<PurchaseTable> PurchaseTables = new List<PurchaseTable>();
