@@ -895,7 +895,7 @@ var mixin = {
                     console.log(data)
                 },
                 onFail: function (err) { }
-            });
+            });searchCode
         },
         //选多人
         addGroup() {

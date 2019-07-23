@@ -182,7 +182,7 @@
                 var url = jinDomarn + 'Pick/ReadPickInfoSingle?keyWord=' + this.searchForm.name
                 this.GetData(url, (data) => {
                     for (let d of data) {
-                        d['left'] = parseInt(d.fQty) - parseInt(d.fQtyInvoice)
+                        d['left'] = parseInt(d.fQty)
                     }
                     this.data = data
                     this.totalRows = data.length
@@ -222,22 +222,6 @@
                         that.purchaseList.push(d)
                     }
                 })
-            },
-            //下拉框选择项目
-            selectProject(id) {
-                console.log(id)
-                for (var project of this.projectList) {
-                    if (project.ProjectId == id) {
-                        this.ruleForm.Title = project.ProjectName + ' - 编号：' + project.ProjectId
-                        let index = 1
-                        this.nodeList[index].AddPeople = [{
-                            name: project.ResponsibleMan,
-                            emplId: project.ResponsibleManId
-                        }]
-                        $("." + index).remove()
-                        $("#" + index).after('<span class="el-tag ' + index + '" style="width: 60px; text-align: center; ">' + project.ResponsibleMan.substring(0, 3) + '</span >')
-                    }
-                }
             },
             //添加申请物料
             addGood(index, good) {
