@@ -208,7 +208,11 @@ function getFormData(demo) {
         demo.getNodeInfo()
         demo.GetDingList(taskId)
         demo.getApproInfo()
+        getFormData_done(res)
     }, demo)
+}
+function getFormData_done(res) {
+
 }
 function handleUrlData(data,demo) {
     var that = this
@@ -807,7 +811,20 @@ var mixin = {
                         }]
                     }
                 }
+                this.getNodeInfo_done(this.nodeList)
+                //设置当前角色正确节点
+                if (this.index && this.index != '0' && this.index != '3') {
+                    for (let i = this.nodeList.length - 1; i >= 0; i--) {
+                        if (this.nodeList[i].ApplyManId == DingData.userid) {
+                            this.NodeId = this.nodeList[i].NodeId
+                            break
+                        }
+                    }
+                }
             })
+        },
+        getNodeInfo_done(nodeList) {
+
         },
         //获取项目数据
         getProjects() {
@@ -1250,8 +1267,10 @@ function GetData(url, succe, demo) {
         url: url,
         type: 'GET',
         success: function (res) {
-            console.log(url)
-            console.log(res)
+            if (url.indexOf('GetFlowStateCounts') <= 0) {
+                console.log(url)
+                console.log(res)
+            }
             if (doWithErrcode(res.error, demo)) {
                 return
             }

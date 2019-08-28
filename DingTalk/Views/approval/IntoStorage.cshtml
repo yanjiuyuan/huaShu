@@ -86,9 +86,8 @@
                     <span style="float: left">{{ item.ProjectName }}  -编号: {{item.ProjectId}}</span>
                     <span style="float: right; color: #8492a6; font-size: 13px"></span>
                 </el-option>
-            </el-select>
-            @*<el-button class="button-new-tag" size="small" v-on:click="showAddProject = true">+ 添加项目</el-button>
-                <el-button v-show="showAddProject" class="button-new-tag" size="small" v-on:click="showAddProject = false">隐藏</el-button>*@
+            </el-select>@*备品备件采购项目 - 猛龙总冠军*@
+            <el-button v-if="ruleForm.ProjectName == '备品备件采购项目'" class="button-new-tag" size="small" v-on:click="chooseMan()">+ 选人</el-button>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
             <el-input v-model="ruleForm.remark"></el-input>
@@ -126,12 +125,16 @@
                     ProjectName: '',
                     Title: '入库申请',
                     ProjectId: null,
+                    inputProjectName: '',
+                    inputProjectId: '',
                     Time: ''
                 }
             }
         },
         methods: {
             onSubmit(formName) {
+                //console.log(this.nodeList)
+                //return
                 if (!this.purchaseList.length) {
                     this.elementAlert('提交失败', '没有选择物料')
                     return
@@ -144,7 +147,7 @@
                     }
                     arr.push(p.fFullName)
                 }
-                //var set = new Set(arr)
+                var set = new Set(arr)
                 //if (set.size != 1) {
                 //    this.elementAlert('提交失败', '物料为空或供应商不唯一')
                 //    return
@@ -191,16 +194,6 @@
                         d['have'] = d.fQty
                         that.purchaseList.push(d)
                     }
-
-                    //let tmpArr = []
-                    //for (let d of data) {
-                    //    if (d.fQty == d.fCommitQty) continue
-                    //    tmpArr.push(d)
-                    //}
-                    //that.data = tmpArr
-                    ////that.data = data
-                    //that.totalRows = that.data.length
-                    //that.getData()
                 })
             },
             searchAndAdd() {
@@ -218,6 +211,26 @@
                         that.purchaseList.push(d)
                     }
                 })
+            },
+            //选人特殊处理
+            chooseMan() {
+                DingTalkPC.biz.contact.choose({
+                    users: [],
+                    multiple: false,
+                    corpId: DingData.CorpId,
+                    max: 10,
+                    onSuccess: (data) => {
+                        console.log(data)
+                        let i = 2
+                        this.nodeList[i].AddPeople = [{
+                            name: data[0].name,
+                            emplId: data[0].emplId
+                        }]
+                        $("." + i).remove()
+                        $("#" + i).after('<span class="el-tag ' + i + '" style="width: 60px; text-align: center; ">' + data[0].name.substring(0, 3) + '</span >')
+                    },
+                    onFail: function (err) { }
+                });
             },
             //添加申请物料
             addGood(index, good) {
