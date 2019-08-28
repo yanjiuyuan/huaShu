@@ -93,7 +93,7 @@ namespace DingTalk.Controllers
                 }
                 return new NewErrorModel()
                 {
-                    data= PurchaseTableList,
+                    data = PurchaseTableList,
                     error = new Error(0, "保存成功！", "") { },
                 };
             }
@@ -380,7 +380,7 @@ namespace DingTalk.Controllers
                     return new NewErrorModel()
                     {
                         error = new Error(0, "打印推送成功！", "") { },
-                    }; 
+                    };
                 }
 
             }
@@ -392,7 +392,7 @@ namespace DingTalk.Controllers
                 };
             }
         }
-        
+
         public async Task<NewErrorModel> PrintPDF(DDContext context, string ApplyManId, string TaskId, string UserId)
         {
             try
@@ -410,8 +410,11 @@ namespace DingTalk.Controllers
                                                 p.CodeNo,
                                                 p.Name,
                                                 p.Standard,
+                                                p.Price, //预计价格
                                                 p.Unit,
                                                 p.Count,
+                                                p.UrgentDate, //需用日期
+                                                p.SendPosition, //送货地点
                                                 p.Purpose,
                                                 p.Mark
                                             };
@@ -482,12 +485,12 @@ namespace DingTalk.Controllers
                 //绘制BOM表单PDF
                 List<string> contentList = new List<string>()
                         {
-                            "序号","物料编码","物料名称","规格型号","单位","数量","用途","备注"
+                            "序号","物料编码","物料名称","规格型号","预计单价","单位","数量","需用日期","送货地点","用途","备注"
                         };
 
                 float[] contentWithList = new float[]
                 {
-                 50, 60, 60, 100, 40, 60, 40,60
+                 50, 60, 60, 100,40, 40,40, 60,40, 40,60
                 };
                 string Name = "";
                 if (FlowId == "24")  //零部件采购
@@ -534,7 +537,7 @@ namespace DingTalk.Controllers
                     error = new Error(2, ex.Message, "") { },
                 };
             }
-            
+
         }
 
 
