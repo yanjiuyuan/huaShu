@@ -238,6 +238,7 @@ namespace DingTalk.Controllers
         {
             try
             {
+
                 string TaskId = printAndSendModel.TaskId;
                 string UserId = printAndSendModel.UserId;
                 string OldPath = printAndSendModel.OldPath;
@@ -249,6 +250,7 @@ namespace DingTalk.Controllers
                     string FlowId = tasks.FlowId.ToString();
                     string ProjectId = tasks.ProjectId;
 
+
                     //判断流程是否已结束
                     List<Tasks> tasksList = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.IsSend != true && t.State == 0).ToList();
                     if (tasksList.Count > 0)
@@ -259,6 +261,7 @@ namespace DingTalk.Controllers
                         };
 
                     }
+
 
                     List<DrawingChange> PurchaseList = context.DrawingChange.Where(u => u.TaskId == TaskId).ToList();
 
@@ -325,13 +328,11 @@ namespace DingTalk.Controllers
                     {
                         string AbPath = AppDomain.CurrentDomain.BaseDirectory + pathChild.Substring(2, pathChild.Length - 2);
                         //PDF盖章 保存路径
-                        newPaths.Add(
-                            pdfHelper.PDFWatermark(AbPath,
-                        string.Format(@"{0}\UploadFile\PDFPrint\{1}",
+                        newPaths.Add(pdfHelper.PDFWatermark(AbPath,
+                        string.Format(@"{0}\UploadFile\PDF\{1}",
                         AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(pathChild)),
                         string.Format(@"{0}\Content\images\变更章.png", AppDomain.CurrentDomain.BaseDirectory),
-                        100, 100)
-                        );
+                        100, 100));
                     }
                     string SavePath = string.Format(@"{0}\UploadFile\Ionic\{1}.zip", AppDomain.CurrentDomain.BaseDirectory, "图纸审核" + DateTime.Now.ToString("yyyyMMddHHmmss"));
                     //文件压缩打包
