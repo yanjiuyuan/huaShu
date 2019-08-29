@@ -256,40 +256,6 @@
             
                
             },
-            stampAndGet() {
-                var paramObj = {
-                    UserId: DingData.userid,
-                    TaskId: TaskId
-                }
-
-                var that = this
-                this._postData("/Purchase/PrintAndSend", function (data) {
-                    console.log("PrintAndSendStart")
-                    var alertStr = "已推送至钉钉"
-                    that.$alert(alertStr, '消息', {
-                        confirmButtonText: '确定',
-                        callback: action => {
-
-                        }
-                    });
-                }, paramObj)
-            },
-            printExcel() {
-                var paramObj = {
-                    UserId: DingData.userid,
-                    TaskId: TaskId
-                }
-                var that = this
-                this._getData("/Purchase/PrintExcel", function (data) {
-                    var alertStr = '已推送至钉钉'
-                    that.$alert(alertStr, '消息', {
-                        confirmButtonText: '确定',
-                        callback: action => {
-
-                        }
-                    });
-                }, paramObj)
-            }
         },
         created: function () {
             this.getBomInfo()

@@ -244,7 +244,7 @@ function handleUrlData(data,demo) {
         demo.fileList = fileList
     }
     if (data.FilePDFUrl && data.FilePDFUrl.length > 5) {
-        FileUrl = data.FilePDFUrl
+        FilePDFUrl = data.FilePDFUrl
         var urlList = data.FilePDFUrl.split(',')
         var oldUrlList = data.OldFilePDFUrl.split(',')
         var MediaIdList = data.MediaIdPDF ? data.MediaIdPDF.split(',') : []
@@ -442,12 +442,15 @@ var mixin = {
                 url: url,
                 type: 'GET',
                 success: function (res) {
-                    console.log(url)
-                    console.log(res)
+                    if (typeof (res) == 'string') res = JSON.parse(res)
+                    if (url.indexOf('GetFlowStateCounts') <= 0) {
+                        console.log(url)
+                        console.log(res)
+                    }
                     if (that.doWithErrcode(res.error)) {
                         return
                     }
-                    succe(res.data)
+                    res.count ? succe(res.data, res.count) : succe(res.data)
                 },
                 error: function (err) {
                     console.error(url)
@@ -695,33 +698,20 @@ var mixin = {
                 UserId: DingData.userid,
                 TaskId: TaskId
             }
-            var that = this
-            this._postData("/Purchase/PrintAndSend", function (data) {
-                var alertStr = ''
-                data.error.errorMessage ? azlertStr = data.error.errorMessage : alertStr = '请求出错，请联系管理员'
-                that.$alert(alertStr, '消息', {
-                    confirmButtonText: '确定',
-                    callback: action => {
-                    }
-                });
-            }, paramObj)
+            this.PostData('PurchaseNew/PrintAndSend', paramObj, (res) => {
+                this.$alert('获取成功，请在钉钉消息查收', '提示');
+            })
         },
         printExcel() {
             var paramObj = {
                 UserId: DingData.userid,
                 TaskId: TaskId
             }
-            var that = this
-            this._postData("/Purchase/PrintExcel", function (data) {
-                var alertStr = ''
-                data.error.errorMessage ? azlertStr = data.error.errorMessage : alertStr = '请求出错，请联系管理员'
-                that.$alert(alertStr, '消息', {
-                    confirmButtonText: '确定',
-                    callback: action => {
-
-                    }
-                });
-            }, paramObj)
+            this.GetData("/PurchaseNew/PrintExcel" + _formatQueryStr(paramObj), (res) => {
+                this.PostData('PurchaseNew/PrintAndSend', paramObj, (res) => {
+                    this.$alert('获取成功，请在钉钉消息查收', '提示');
+                })
+            })
         },
         //翻頁相關事件
         getData() {
