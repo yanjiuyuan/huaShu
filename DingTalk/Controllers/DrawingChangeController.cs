@@ -1,5 +1,6 @@
 ﻿using Common.ClassChange;
 using Common.DTChange;
+using Common.Excel;
 using Common.Ionic;
 using Common.PDF;
 using DingTalk.Bussiness.FlowInfo;
@@ -15,6 +16,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 
 namespace DingTalk.Controllers
@@ -249,7 +251,7 @@ namespace DingTalk.Controllers
                     Tasks tasks = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.NodeId == 0).First();
                     string FlowId = tasks.FlowId.ToString();
                     string ProjectId = tasks.ProjectId;
-
+                    OldPath = tasks.FilePDFUrl;
 
                     //判断流程是否已结束
                     List<Tasks> tasksList = context.Tasks.Where(t => t.TaskId.ToString() == TaskId && t.IsSend != true && t.State == 0).ToList();
@@ -350,6 +352,78 @@ namespace DingTalk.Controllers
                     {
                         error = new Error(0, "已推送至钉钉！", "") { },
                     };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(2, ex.Message, "") { },
+                };
+            }
+        }
+
+        /// <summary>
+        /// 获取Excel Bom报表
+        /// </summary>
+        /// <param name="taskId"></param>
+        /// <param name="applyManId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("GetExcelReport")]
+        public async Task<NewErrorModel> GetExcelReport(string taskId, string applyManId)
+        {
+            try
+            {
+                //EFHelper<Purchase> eFHelper = new EFHelper<Purchase>();
+                //System.Linq.Expressions.Expression<Func<Purchase, bool>> where = p => p.TaskId == taskId;
+                //List<Purchase> purchases = eFHelper.GetListBy(where);
+                using (DDContext context = new DDContext())
+                {
+                    var SelectPurchaseList = from p in context.DrawingChange
+                                             where p.TaskId == taskId
+                                             select new
+                                             {
+                                                 p.TaskId,
+                                                 p.DrawingNo,
+                                                 p.Name,
+                                                 p.Count,
+                                                 p.MaterialScience,
+                                                 p.Unit,
+                                                 p.SingleWeight,
+                                                 p.AllWeight,
+                                                 p.Sorts,
+                                                 p.NeedTime,
+                                                 p.Mark
+                                             };
+
+                    DataTable dtpurchaseTables = DtLinqOperators.CopyToDataTable(SelectPurchaseList);
+                    string path = HttpContext.Current.Server.MapPath("~/UploadFile/Excel/Templet/图纸BOM导出模板.xlsx");
+                    string time = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    string newPath = HttpContext.Current.Server.MapPath("~/UploadFile/Excel/Templet") + "\\图纸BOM数据" + time + ".xlsx";
+                    System.IO.File.Copy(path, newPath);
+                    if (ExcelHelperByNPOI.UpdateExcel(newPath, "Sheet1", dtpurchaseTables, 0, 1))
+                    {
+                        DingTalkServersController dingTalkServersController = new DingTalkServersController();
+                        //上盯盘
+                        var resultUploadMedia = await dingTalkServersController.UploadMedia("~/UploadFile/Excel/Templet/图纸BOM数据" + time + ".xlsx");
+                        //推送用户
+                        FileSendModel fileSendModel = JsonConvert.DeserializeObject<FileSendModel>(resultUploadMedia);
+                        fileSendModel.UserId = applyManId;
+                        var result = await dingTalkServersController.SendFileMessage(fileSendModel);
+
+                        return new NewErrorModel()
+                        {
+                            error = new Error(0, "已推送至钉钉！", "") { },
+                        };
+                    }
+                    else
+                    {
+                        return new NewErrorModel()
+                        {
+                            error = new Error(1, "文件有误！", "") { },
+                        };
+                    }
                 }
             }
             catch (Exception ex)
