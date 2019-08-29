@@ -453,6 +453,7 @@
     <Compile Include="Models\DingModels\Roles.cs" />
     <Compile Include="Models\DingModels\TasksPurcahse.cs" />
     <Compile Include="Models\DingModels\Tasks.cs" />
+    <Compile Include="Models\DingModels\TasksQuery.cs" />
     <Compile Include="Models\DingModels\TasksState.cs" />
     <Compile Include="Models\DingModels\UserInfo.cs" />
     <Compile Include="Models\DingModels\Vote.cs" />
