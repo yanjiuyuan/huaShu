@@ -466,6 +466,7 @@
     <Compile Include="Models\FileMsgModel.cs" />
     <Compile Include="Models\FileSendModel.cs" />
     <Compile Include="Models\ImageMsgModel.cs" />
+    <Compile Include="Models\KisLocalModels\ChangeRemark.cs" />
     <Compile Include="Models\KisLocalModels\KisLocalContext.cs" />
     <Compile Include="Models\KisLocalModels\t_ICItem.cs" />
     <Compile Include="Models\KisModels\KisContext.cs" />
