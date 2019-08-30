@@ -115,20 +115,8 @@
             <el-input v-model="ruleForm.name" :disabled="true"></el-input>
         </el-form-item>
 
-        @*<el-form-item label="项目名" prop="ProjectId">
-            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
-                <el-option v-for="item in projectList"
-                           :key="item.ProjectId"
-                           :label="item.ProjectName"
-                           :value="item.ProjectId">
-                    <span style="float: left">{{ item.ProjectName }}  -编号: {{item.ProjectId}}</span>
-                    <span style="float: right; color: #8492a6; font-size: 13px"></span>
-                </el-option>
-            </el-select>
-        </el-form-item>*@
-
         <el-form-item label="合同名" prop="ProjectId">
-            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;">
+            <el-select v-model="ruleForm.ProjectId" placeholder="请选择" style="width:400px;" v-on:change="selectProject">
                 <el-option v-for="item in projectList"
                            :key="item.ContractNo"
                            :label="item.ContractName + ' -编号: ' + item.ContractNo"
@@ -237,6 +225,14 @@
                     ProjectName: ProjectName,
                     ProjectId: that.ruleForm.ProjectId
                 }, callBack)
+            },
+            selectProject(id) {
+                console.log(id)
+                for (var proj of this.projectList) {
+                    if (proj.ContractNo == id) {
+                        this.ruleForm.Title = proj.ContractNo + ' - ' + proj.ContractName
+                    }
+                }
             },
             //加载重新发起审批传递的数据
             loadReApprovalData() {

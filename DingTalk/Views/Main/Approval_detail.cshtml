@@ -121,9 +121,6 @@
         <!--添加审批人-->
         <sam-approver-list :nodeList="nodeList" :single="true" :nodedata="nodeInfo"></sam-approver-list>
 
-        <!--添加抄送人-->
-        @*<sam-addapprover :preset="preCopy" :approvers="copyers">
-        </sam-addapprover>*@
         <template v-if="index==0">
             <el-form-item label="审批意见" prop="mark">
                 <el-input v-model="ruleForm.mark"></el-input>
