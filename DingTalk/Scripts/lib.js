@@ -522,7 +522,7 @@ var mixin = {
                                     "IsEnable": 1,
                                     "FlowId": FlowId + '',
                                     "NodeId": node.NodeId + '',
-                                    "IsSend": false,
+                                    "IsSend": node.IsSend,
                                     "State": 0,
                                     "OldFileUrl": null,
                                     "IsBack": null
@@ -744,6 +744,7 @@ var mixin = {
                 if (proj.ProjectId == id) {
                     this.ruleForm.ProjectName = proj.ProjectName
                     project = proj
+                    this.ruleForm.Title = proj.ProjectId + ' - ' + proj.ProjectName
                 }
             }
             //this.ruleForm.Title = project.ProjectName + ' - 编号：' + project.ProjectId
@@ -1557,69 +1558,6 @@ Vue.component('ding', {
             console.log(param)
             DingTalkPC.biz.ding.post(param)
         }
-    }
-})
-
-
-Vue.component('sam-addapprover', {
-    props: ['preset', 'approvers','type'],
-    template: `<div>
-                    <el-form-item v-if="type=='approve'" label="审批人" style="margin-bottom:0px;">
-                        <span v-if="preset" class="hint">审批人已由管理员预置,并将自动去重</span>
-                        <el-button v-else class="button-new-tag" size="small" v-on:click="showInput">+ 添加审批人</el-button>
-                    </el-form-item>
-                    <el-form-item v-else label="抄送人" style="margin-bottom:0px;">
-                        <span v-if="preset" class="hint">抄送人已由管理员预置,并将自动去重</span>
-                        <el-button v-else class="button-new-tag" size="small" v-on:click="showInput">+ 添加抄送人</el-button>
-                    </el-form-item>
-                    <el-form-item>
-                        <template v-for="(tag,index) in approvers">
-                            <template v-if="index>0 && index< approvers.length+1">
-                                <span> , </span>
-                            </template>
-                            <el-tag :key="tag"
-                                    :closable="!preset"
-                                    onclick=""
-                                    :disable-transitions="false"
-                                    v-on:close="handleClose(tag)">
-                                {{tag}}
-                            </el-tag>
-                        </template>
-                        <el-input class="input-new-tag"
-                                    v-if="inputVisible"
-                                    v-model="inputValue"
-                                    ref="saveTagInput"
-                                    size="small"
-                                    v-on:keyup.enter.native="handleInputConfirm"
-                                    v-on:blur="handleInputConfirm">
-                        </el-input>
-                    </el-form-item></div>`,
-    data: function () {
-        return {
-            inputValue: '',
-            inputVisible: false
-        }
-    },
-    methods: {
-        showInput() {
-            this.inputVisible = true;
-            this.$nextTick(_ => {
-                this.$refs.saveTagInput.$refs.input.focus();
-            });
-        },
-        handleClose(tag) {
-            this.approvers.splice(this.approvers.indexOf(tag), 1);
-        },
-        handleInputConfirm() {
-            let inputValue = this.inputValue;
-            if (inputValue) {
-                this.approvers.push(inputValue);
-            }
-            this.inputVisible = false;
-            this.inputValue = '';
-        }
-    },
-    computed: {
     }
 })
 

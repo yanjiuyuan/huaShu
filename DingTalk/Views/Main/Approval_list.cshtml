@@ -21,6 +21,12 @@
         <el-table-column prop="ApplyMan" label="申请人"></el-table-column>
         <el-table-column prop="ApplyTime" label="申请时间"></el-table-column>
         <el-table-column v-if="Index != '0'" prop="State" label="状态"></el-table-column>
+        <el-table-column v-if="Index == 3" prop="State" label="是否已读">
+            <template slot-scope="scope">
+                <span v-if="scope.row.IsRead" class="greenFont">已读</span>
+                <span v-else class="redFont">未读</span>
+            </template>
+        </el-table-column>
         <el-table-column label="操作">
             <template slot-scope="scope">
                 <el-button size="mini" v-on:click="handleEdit(scope.$index, scope.row)">详情</el-button>
@@ -72,6 +78,21 @@
             searchCode() {
                 if (!this.searchForm.keyword) return
                 this.getApproveList(this.searchForm.keyword)
+            },
+            getData2(keyword) {
+                let param = {
+                    Index: Index,
+                    ApplyManId: DingData.userid,
+                    pageIndex: this.currentPage,
+                    pageSize: this.pageSize
+                }
+                if (keyword) param['Key'] = keyword
+                this.GetData('FlowInfoNew/GetFlowStateDetail' + _formatQueryStr(param), (res, count) => {
+                    console.log(res)
+                    this.showLoading = false
+                    this.tableData = res
+                    this.totalRows = count
+                })
             },
             //获取审批列表
             getApproveList(keyword) {
@@ -187,7 +208,7 @@
             console.log('UrlObj')
             console.log(UrlObj)
             Index = UrlObj.Index
-            this.getApproveList()
+            this.getData2()
             loadHtml("mainPage", "partPage")
         }
     })
