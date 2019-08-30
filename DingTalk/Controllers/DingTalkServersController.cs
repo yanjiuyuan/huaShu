@@ -2,12 +2,14 @@
 using DingTalk.Bussiness.FlowInfo;
 using DingTalk.Models;
 using DingTalk.Models.DingModels;
+using DingTalk.Models.KisLocalModels;
 using DingTalk.Models.MobileModels;
 using DingTalkServer;
 using DingTalkServer.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -83,7 +85,6 @@ namespace DingTalk.Controllers
                     }
                 }
             }
-            //return JsonConvert.SerializeObject(ListDepartmentId);
             var results = await dtManager.SingleDepartment(Int32.Parse(ListDepartmentId[0]));
             return results;
         }
@@ -139,13 +140,13 @@ namespace DingTalk.Controllers
         #region user curd
         [Route("getUserDetail")]
         [System.Web.Http.HttpPost]
-        public async Task<string> GetUserDetail()
+        public async Task<string> GetUserDetail(string userId)
         {
             //string dptId = "0935455445756597";
             //var departmentUserStr = await dtManager.GetDepartmentUserList(dptId);
             //var departmentUser = JsonConvert.DeserializeObject<DepartmentUserResponseModel>(departmentUserStr);
             //string userId = departmentUser.UserList.Last().UserId;
-            string userId = "0935455445756597";
+            //string userId = "283763135732555063";
             var result = await dtManager.GetUserDetail(userId);
             return result;
         }
@@ -265,14 +266,14 @@ namespace DingTalk.Controllers
 
         [Route("sendTextMessage")]
         [HttpPost]
-        public async Task<string> SendTextMessage()
+        public async Task<string> SendTextMessage(string msg, string userId)
         {
             var msgModel = new TextMsgModel()
             {
                 agentid = DTConfig.AgentId,
-                Content = "测试一条消息",
+                Content = msg,
                 //Toparty = "32760351"
-                touser = "manager3312",
+                touser = userId,
             };
             return await dtManager.SendMessage(msgModel);
         }
@@ -313,8 +314,6 @@ namespace DingTalk.Controllers
         /// </summary>
         /// <returns></returns>
         /// 测试数据： DingTalkServers/sendFileMessage
-        /// UserId 用户Id   MediaId 盯盘文件唯一Id
-        /// data:{ "UserId":"manager325","Media_Id":"@@lAjPBY0V43mDr87ODCczbc5-853G"}
         [Route("sendFileMessage")]
         [HttpPost]
         public async Task<string> SendFileMessage([FromBody]FileSendModel fileSendModel)
@@ -331,6 +330,32 @@ namespace DingTalk.Controllers
                 messageType = MessageType.File
             };
             return await dtManager.SendMessage(msgModel);
+        }
+
+        /// <summary>
+        /// 向用户推送文件消息(新)
+        /// </summary>
+        /// <returns></returns>
+        [Route("SendFileMessageNew")]
+        [HttpPost]
+        public async Task<NewErrorModel> SendFileMessageNew([FromBody]FileSendModel fileSendModel)
+        {
+            DingTalkConfig dingTalkConfig = new DingTalkConfig();
+            var msgModel = new FileMsgModel()
+            {
+                agentid = dingTalkConfig.AgentId,
+                file = new file
+                {
+                    media_id = fileSendModel.Media_Id
+                },
+                touser = fileSendModel.UserId,
+                messageType = MessageType.File
+            };
+            return new NewErrorModel()
+            {
+                data = await dtManager.SendMessage(msgModel),
+                error = new Error(0, "推送成功！", "") { },
+            };
         }
 
 
@@ -375,32 +400,6 @@ namespace DingTalk.Controllers
             var result = await _client.UploadModel(url, sendWorkModel);
             return result;
 
-            //TopSDKTest top = new TopSDKTest();
-            //OATextModel oaTextModel = new OATextModel();
-            //oaTextModel.message_url = "eapp://page/start/index?corpId=dingac9b87fa3acab57135c2f4657eb6378f&port=49312";
-            //oaTextModel.head = new head
-            //{
-            //    bgcolor = "FFBBBBBB",
-            //    text = "头部标题111222"
-            //};
-            //oaTextModel.body = new body
-            //{
-            //    form = new form[] {
-            //            new form{ key="姓名",value="11张三"},
-            //            new form{ key="爱好",value="打球"},
-            //        },
-            //    rich = new rich
-            //    {
-            //        num = "15.6",
-            //        unit = "元"
-            //    },
-            //    //title = "正文标题",
-            //    content = "111一大段文字",
-            //    image = "@lADOADmaWMzazQKA",
-            //    file_count = "3",
-            //    author = "李四"
-            //};
-            //return top.SendOaMessage(userId, oaTextModel);
         }
 
         /// <summary>
@@ -468,6 +467,84 @@ namespace DingTalk.Controllers
             var result = await _client.UploadModel(url, sendOAModel);
             return result;
         }
+
+        /// <summary>
+        /// 生产加工进度通知推送
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="type">推送类型 0 蔡靓弥 1 设计者 2 胡工</param>
+        /// <param name="applyMan"></param>
+        /// <param name="bom"></param>
+        /// <param name="taskId"></param>
+        /// <param name="companyName">公司名称</param>
+        /// <param name="speedOfProgress"></param>
+        /// <param name="IsRead">确认状态</param>
+        /// <param name="linkUrl"></param>
+        /// <returns></returns>
+        [Route("SendProcessingProgress")]
+        [HttpPost]
+        public async Task<object> SendProcessingProgress(string userId, int type,
+        string applyMan, string bom, string taskId, string companyName,
+        string speedOfProgress, bool? IsRead, string linkUrl = "eapp://page/start/index")
+        {
+            DingTalkServerAddressConfig _addressConfig = DingTalkServerAddressConfig.GetInstance();
+            HttpsClient _client = new HttpsClient();
+            string keyword = "";
+            switch (type)
+            {
+                case 0: keyword = "新增"; break;
+                case 1: keyword = "确认"; break;
+                case 2: keyword = "修改"; break;
+                case 3: keyword = "分配"; break;
+            };
+
+            oa oa = new oa()
+            {
+                message_url = linkUrl,
+                head = new head
+                {
+                    bgcolor = "FFBBBBBB",
+                    text = "头部标题111222"
+                },
+                body = new body
+                {
+                    title = string.Format("生产加工进度{0}通知", keyword),
+                    form = new form[] {
+                        new form{ key="公司名称：",value=companyName},
+                        new form{ key=string.Format("{0}人：",keyword),value=applyMan},
+                        new form{ key=string.Format("{0}时间：",keyword),value=DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")},
+                        new form{ key=string.Format("流水号：",keyword),value=taskId},
+                        new form{ key=string.Format("{0}BOM：",keyword),value=bom},
+                        new form{ key=string.Format("进度状态："),value=speedOfProgress},
+                        new form{ key=string.Format("确认状态："),value=IsRead==true?"已确认":"未确认"},
+                    },
+                }
+            };
+            NewOATestModel newOATestModel = new NewOATestModel()
+            {
+                msgtype = "oa",
+                oa = oa
+            };
+
+            DingTalk.Models.SendOAModel sendOAModel = new SendOAModel()
+            {
+                //E应用agent_id
+                agent_id = long.Parse(DTConfig.AppAgentId),
+                userid_list = userId,
+                to_all_user = false,
+                //dept_id_list = null,
+                msg = newOATestModel
+            };
+            LoginMobileController loginMobileController = new LoginMobileController();
+            var access_token = await loginMobileController.GetAccessToken();
+            _client.QueryString.Add("access_token", access_token);
+            var url = _addressConfig.GetWorkMsgUrl;
+            var result = await _client.UploadModel(url, sendOAModel);
+            return result;
+        }
+
+
+
 
 
         /// <summary>
@@ -662,6 +739,42 @@ namespace DingTalk.Controllers
                 return new NewErrorModel()
                 {
                     error = new Error(2, ex.Message, "") { },
+                };
+            }
+        }
+
+        #endregion
+
+        #region 本人审批意见修改
+
+        /// <summary>
+        /// 本人审批意见修改
+        /// </summary>
+        /// <param name="changeRemark"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("ChangeRemark")]
+        public NewErrorModel ChangeRemark(ChangeRemark changeRemark)
+        {
+            try
+            {
+                using (DDContext context = new DDContext())
+                {
+                    Tasks tasks = context.Tasks.Find(Int32.Parse(changeRemark.Id));
+                    tasks.Remark = changeRemark.Remark;
+                    context.Entry<Tasks>(tasks).State = EntityState.Modified;
+                    context.SaveChanges();
+                }
+                return new NewErrorModel()
+                {
+                    error = new Error(0, "修改成功！", "") { },
+                };
+            }
+            catch (Exception ex)
+            {
+                return new NewErrorModel()
+                {
+                    error = new Error(1, ex.Message, "") { },
                 };
             }
         }
