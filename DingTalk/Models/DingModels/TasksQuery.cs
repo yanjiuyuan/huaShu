@@ -62,5 +62,7 @@
         /// </summary>
         public bool? IsSend { get; set; }
 
+     
+        
     }
 }
